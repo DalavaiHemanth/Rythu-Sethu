@@ -1,0 +1,6 @@
+{
+  "name": "Rythu Sethu",
+  "description": "A Multi-Lingual Farm Advisory, AI Soil Health Card Analyzer & Scheme Eligibility Checker for Telangana farmers.",
+  "requestFramePermissions": ["microphone", "camera", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
