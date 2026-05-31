@@ -1,0 +1,64 @@
+image: node:20-alpine
+
+stages:
+  - lint
+  - build
+  - deploy
+
+# Cache node_modules across jobs
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+
+# ── Stage 1: Lint ─────────────────────────────────────────────────────────────
+lint:
+  stage: lint
+  script:
+    - npm ci
+    - npm run lint
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 2: Build ────────────────────────────────────────────────────────────
+build:
+  stage: build
+  script:
+    - npm ci
+    - npx vite build
+  artifacts:
+    name: "dist-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - dist/
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 3: Deploy to GitLab Pages ──────────────────────────────────────────
+#
+# GitLab Pages requires artifacts to be published into a folder called "public/".
+# The built React/Vite app lives in dist/ — we copy it over here.
+#
+# ⚠️  The Express backend (/api/chat) is NOT hosted by GitLab Pages (static only).
+#     To enable the AI Chatbot feature you must also deploy the Express server
+#     separately (e.g. Render, Railway, Fly.io) and set the VITE_API_URL
+#     variable in GitLab CI/CD → Settings → Variables.
+#
+pages:
+  stage: deploy
+  script:
+    - cp -r dist public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# ── (Optional) Backend deployment hint ───────────────────────────────────────
+# To deploy the Express backend, add a job that builds dist/server.cjs
+# and deploys it to your chosen cloud provider.
+# Required CI/CD Variables (Settings → CI/CD → Variables):
+#   GEMINI_API_KEY  — your Google Gemini API key (mark as "Masked")
