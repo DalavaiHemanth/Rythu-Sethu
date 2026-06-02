@@ -1,20 +1,18 @@
 # GitLab CI/CD Pipeline Configuration for Rythu Sethu
 # -----------------------------------------------------
-# This pipeline automates quality checks, linting, Docker image compilation, 
-# and provides templates for multi-destination deployment.
+# This pipeline automates quality checks, linting, and deploys the application 
+# directly to GitLab's built-in static web hosting (GitLab Pages).
+# 
+# 🔐 SECURE BINDING: This requires NO Google Cloud service accounts, key JSON files, 
+# or container registries. It runs 100% free with only your GEMINI_API_KEY config.
+#
+# Optional: To bake your GEMINI_API_KEY directly into the build, define a GitLab
+# CI/CD Variable named `GEMINI_API_KEY` in: Settings -> CI/CD -> Variables.
+# Otherwise, users can enter their key securely inside the application UI!
 
 stages:
   - quality
-  - build
   - deploy
-
-variables:
-  # Enable Docker-in-Docker build caching
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: "/certs"
-  # Name of the built Docker image using GitLab's built-in container registry
-  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
-  IMAGE_TAG_LATEST: "$CI_REGISTRY_IMAGE:latest"
 
 # ---------------------------------------------------------------------------
 # Stage 1: Quality (Type-checking and Linting)
@@ -32,134 +30,32 @@ typecheck-and-lint:
   script:
     # Run the type-checker script
     - npm run lint
-    # Test compilation to verify there are no esbuild or bundling errors
-    - npm run build
 
 # ---------------------------------------------------------------------------
-# Stage 2: Containerization (Build & push to GitLab Container Registry)
+# Stage 2: GitLab Pages Deploy (Direct Serverless Static Hosting)
 # ---------------------------------------------------------------------------
-build-image:
-  stage: build
-  image: docker:24.0.5
-  services:
-    - docker:24.0.5-dind
-  rules:
-    # Only build and push the container image on the default branch (e.g. main/master) or merge requests
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  before_script:
-    # Login to GitLab's built-in Container Registry
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
-  script:
-    # Build container image utilizing Docker caching
-    - docker pull $IMAGE_TAG_LATEST || true
-    - >
-      docker build 
-      --cache-from $IMAGE_TAG_LATEST 
-      -t $IMAGE_TAG 
-      -t $IMAGE_TAG_LATEST 
-      .
-    # Push image to registry
-    - docker push $IMAGE_TAG
-    - docker push $IMAGE_TAG_LATEST
-
-# ---------------------------------------------------------------------------
-# Stage 3: Deployment (Uncomment & configure the destination of your choice)
-# ---------------------------------------------------------------------------
-
-# OPTION A: Deploy to Google Cloud Run (Recommended for multi-lingual apps)
-# Secure authentication options:
-#   1. Workload Identity Federation (OIDC) - Preferred (No static key JSON files needed)
-#      Variables needed: GCP_PROJECT_ID, GCP_PROJECT_NUMBER, GCP_POOL_ID, GCP_PROVIDER_ID, GCP_SERVICE_ACCOUNT, GCP_REGION
-#   2. Classic Service Account JSON Key (Fallback)
-#      Variables needed: GCP_SERVICE_KEY, GCP_PROJECT_ID, GCP_REGION
-deploy-to-cloud-run:
+pages:
   stage: deploy
-  image: google/cloud-sdk:alpine
-  services:
-    - docker:24.0.5-dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-  id_tokens:
-    GCP_ID_TOKEN:
-      aud: "https://iam.googleapis.com/projects/$GCP_PROJECT_NUMBER/locations/global/workloadIdentityPools/$GCP_POOL_ID/providers/$GCP_PROVIDER_ID"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && ($GCP_SERVICE_KEY != "" && $GCP_SERVICE_KEY != null || $GCP_POOL_ID != "" && $GCP_POOL_ID != null)'
+  image: node:20-alpine
+  cache:
+    key: "rythu-sethu-deps"
+    paths:
+      - .npm/
   before_script:
-    # Install docker CLI to pull/push registry images
-    - apk add --no-cache docker-cli
-    # Authenticate with GitLab Registry
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
-    # Authenticate with Google Cloud Platform
-    - |
-      if [ -n "$GCP_POOL_ID" ] && [ -n "$GCP_PROVIDER_ID" ] && [ -n "$GCP_PROJECT_NUMBER" ] && [ -n "$GCP_SERVICE_ACCOUNT" ]; then
-        echo "Authenticating using Workload Identity Federation (OIDC)..."
-        echo "${GCP_ID_TOKEN}" > /tmp/oidc_token
-        # Generate the Google Cloud federated credential configuration file helper
-        gcloud iam workload-identity-pools create-cred-config \
-          "projects/${GCP_PROJECT_NUMBER}/locations/global/workloadIdentityPools/${GCP_POOL_ID}/providers/${GCP_PROVIDER_ID}" \
-          --service-account="${GCP_SERVICE_ACCOUNT}" \
-          --output-file=/tmp/gcp_creds.json \
-          --credential-source-file=/tmp/oidc_token
-        export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp_creds.json
-        gcloud auth login --cred-file=/tmp/gcp_creds.json --quiet
-      elif [ -n "$GCP_SERVICE_KEY" ]; then
-        echo "Found GCP_SERVICE_KEY. Authenticating using static JSON service account key..."
-        echo "$GCP_SERVICE_KEY" > gcloud-service-key.json
-        gcloud auth activate-service-account --key-file=gcloud-service-key.json --quiet
-      else
-        echo "Error: Neither Workload Identity Federation OIDC variables nor GCP_SERVICE_KEY were found."
-        echo "Please set up either OIDC (GCP_PROJECT_NUMBER, GCP_POOL_ID, GCP_PROVIDER_ID, GCP_SERVICE_ACCOUNT) or GCP_SERVICE_KEY in GitLab Settings."
-        exit 1
-      fi
-    - gcloud config set project $GCP_PROJECT_ID
-    # Authenticate Docker client for GCP Container Registry (GCR)
-    - gcloud auth configure-docker --quiet
+    - npm install --no-audit --no-fund --cache .npm --prefer-offline
   script:
-    # Pull the production-ready image from GitLab Registry
-    - docker pull $IMAGE_TAG
-    # Tag the image for Google Container Registry (GCR)
-    - GCR_IMAGE="gcr.io/$GCP_PROJECT_ID/rythu-sethu:$CI_COMMIT_SHA"
-    - docker tag $IMAGE_TAG $GCR_IMAGE
-    # Push the image to GCP Container Registry
-    - docker push $GCR_IMAGE
-    # Deploy built image securely to Google Cloud Run
-    - gcloud run deploy rythu-sethu 
-        --image=$GCR_IMAGE 
-        --platform=managed 
-        --region=$GCP_REGION 
-        --allow-unauthenticated
-        --port=3000
-        --set-env-vars="GEMINI_API_KEY=$GEMINI_API_KEY,NODE_ENV=production"
-
-# OPTION B: Deploy to Virtual Private Server (VPS / Ubuntu) via SSH
-# To use this: Define variables `SSH_KEY_PRIVATE`, `SERVER_IP`, and `SERVER_USER` in GitLab Settings
-# deploy-ssh-vps:
-#   stage: deploy
-#   image: alpine:latest
-#   rules:
-#     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-#   before_script:
-#     - apk add --no-cache openssh-client
-#     - eval $(ssh-agent -s)
-#     - echo "$SSH_KEY_PRIVATE" | tr -d '\r' | ssh-add -
-#     - mkdir -p ~/.ssh
-#     - chmod 700 ~/.ssh
-#     - ssh-keyscan $SERVER_IP >> ~/.ssh/known_hosts
-#     - chmod 644 ~/.ssh/known_hosts
-#   script:
-#     # SSH into server, pull latest image from GitLab Registry, stop stale container, and boot new one on Port 3000 securely
-#     - >
-#       ssh $SERVER_USER@$SERVER_IP "
-#         echo '$CI_REGISTRY_PASSWORD' | docker login -u '$CI_REGISTRY_USER' --password-stdin $CI_REGISTRY &&
-#         docker pull $IMAGE_TAG &&
-#         docker stop rythu-sethu-live || true &&
-#         docker rm rythu-sethu-live || true &&
-#         docker run -d 
-#           --name rythu-sethu-live 
-#           -p 3000:3000 
-#           -e GEMINI_API_KEY='$GEMINI_API_KEY' 
-#           -e NODE_ENV='production' 
-#           --restart unless-stopped 
-#           $IMAGE_TAG
-#       "
+    - echo "Building static front-end assets..."
+    # If the user defined a GEMINI_API_KEY environment variable in GitLab Settings,
+    # we copy it to VITE_GEMINI_API_KEY so Vite bakes it into the build.
+    - if [ -n "$GEMINI_API_KEY" ]; then export VITE_GEMINI_API_KEY="$GEMINI_API_KEY"; fi
+    - npm run build
+    # GitLab Pages strictly expects the folder containing static files to be named 'public'
+    - rm -rf public
+    - mkdir public
+    - cp -r dist/* public/
+  artifacts:
+    paths:
+      - public
+  rules:
+    # Build & deploy to Pages whenever a push happens on the default branch (e.g. main/master)
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
