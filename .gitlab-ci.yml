@@ -23,13 +23,18 @@ typecheck-and-lint:
   stage: quality
   image: node:20-alpine
   cache:
-    key:
-      files:
-        - package-lock.json
+    key: "rythu-sethu-deps"
     paths:
       - .npm/
   before_script:
-    - npm ci --cache .npm --prefer-offline
+    - |
+      if [ -f package-lock.json ]; then
+        echo "Found package-lock.json. Running npm ci..."
+        npm ci --cache .npm --prefer-offline
+      else
+        echo "No package-lock.json found. Running npm install..."
+        npm install --no-audit --no-fund --cache .npm --prefer-offline
+      fi
   script:
     # Run the type-checker script
     - npm run lint
