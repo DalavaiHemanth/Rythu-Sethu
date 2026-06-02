@@ -27,14 +27,8 @@ typecheck-and-lint:
     paths:
       - .npm/
   before_script:
-    - |
-      if [ -f package-lock.json ]; then
-        echo "Found package-lock.json. Running npm ci..."
-        npm ci --cache .npm --prefer-offline
-      else
-        echo "No package-lock.json found. Running npm install..."
-        npm install --no-audit --no-fund --cache .npm --prefer-offline
-      fi
+    - echo "Installing dependencies..."
+    - npm install --no-audit --no-fund --cache .npm --prefer-offline
   script:
     # Run the type-checker script
     - npm run lint
