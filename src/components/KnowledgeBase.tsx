@@ -1,7 +1,19 @@
+import {
+  AlertCircle,
+  BookOpen,
+  Calendar,
+  CheckCircle,
+  ChevronRight,
+  Database,
+  FilePlus,
+  FileText,
+  Plus,
+  RefreshCcw,
+  Trash2,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { FileText, Plus, Trash2, Calendar, Database, CheckCircle, RefreshCcw, BookOpen, AlertCircle, FilePlus, ChevronRight } from 'lucide-react';
-import { TRANSLATIONS, LanguageKey } from '../data/translations';
+import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { UploadedDoc } from '../types';
 
 interface KnowledgeBaseProps {
@@ -9,8 +21,19 @@ interface KnowledgeBaseProps {
   onDocumentAdded: () => void;
 }
 
-export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBaseProps) {
+export default function KnowledgeBase({
+  language,
+  onDocumentAdded,
+}: KnowledgeBaseProps) {
   const t = TRANSLATIONS[language];
+
+  const pSpacingClass =
+    language === 'te'
+      ? 'leading-[1.95] tracking-[0.035em]'
+      : language === 'ur'
+        ? 'leading-[1.95] tracking-[0.04em]'
+        : 'leading-relaxed';
+
   const [documents, setDocuments] = useState<UploadedDoc[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +106,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
       setContent('');
       setSelectedDoc(null);
       setUploadSuccess(true);
-      
+
       // Refresh documents
       await fetchDocuments();
       onDocumentAdded();
@@ -105,7 +128,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
     reader.onload = (event) => {
       const text = event.target?.result as string;
       if (text) {
-        setTitle(file.name.replace(/\.[^/.]+$/, "")); // Strip extension
+        setTitle(file.name.replace(/\.[^/.]+$/, '')); // Strip extension
         setContent(text);
       }
     };
@@ -130,8 +153,10 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-transparent" id="kb-root">
-      
+    <div
+      className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-transparent"
+      id="kb-root"
+    >
       {/* Upload and Input Form */}
       <div className="lg:col-span-7">
         <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-earth-100 space-y-6">
@@ -139,17 +164,19 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
             <div className="space-y-1 text-left flex-1 min-w-[200px]">
               <h2 className="text-lg md:text-xl font-display font-bold text-crop-900 tracking-tight flex items-center gap-2">
                 <FilePlus className="w-5.5 h-5.5 text-crop-600 shrink-0" />
-                {selectedDoc ? "✏️ Loaded Circular Editor" : t.ragHeader}
+                {selectedDoc ? '✏️ Loaded Circular Editor' : t.ragHeader}
               </h2>
-              <p className="text-xs text-stone-500 leading-relaxed">
-                {selectedDoc ? "You are viewing/modifying an active G.O. policy. Click 'Reset Form' to start a new document write." : t.ragDesc}
+              <p className={`text-xs text-stone-500 ${pSpacingClass}`}>
+                {selectedDoc
+                  ? "You are viewing/modifying an active G.O. policy. Click 'Reset Form' to start a new document write."
+                  : t.ragDesc}
               </p>
             </div>
             {selectedDoc && (
               <button
                 type="button"
                 onClick={handleClearSelection}
-                className="px-2.5 py-1 text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded text-[10px] font-mono font-bold tracking-tight uppercase cursor-pointer shrink-0"
+                className="px-2.5 py-1 text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded text-[10px] font-mono font-bold tracking-tight uppercase cursor-pointer shrink-0 min-h-[44px] flex items-center justify-center"
               >
                 Reset Form ✕
               </button>
@@ -159,13 +186,16 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
           <form onSubmit={handleSubmit} className="space-y-4 text-left">
             {/* Title */}
             <div className="space-y-1.5">
-              <label htmlFor="doc-title-in" className="text-[11px] font-mono font-bold text-stone-600 uppercase tracking-wider pl-1">
+              <label
+                htmlFor="doc-title-in"
+                className="text-[11px] font-mono font-bold text-stone-600 uppercase tracking-wider pl-1"
+              >
                 {t.docTitle}
               </label>
               <input
                 id="doc-title-in"
                 type="text"
-                className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 px-4 text-xs focus:ring-2 focus:ring-crop-600 focus:outline-none"
+                className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 px-4 text-xs focus:ring-2 focus:ring-crop-600 focus:outline-none min-h-[44px]"
                 placeholder="e.g. Telangana Rain-fed Compensation GO 103"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -183,7 +213,9 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
                 className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
               />
               <div className="space-y-1">
-                <p className="text-xs font-sans text-stone-600 font-medium group-hover:text-crop-700 transition-colors">
+                <p
+                  className={`text-xs font-sans text-stone-600 font-medium group-hover:text-crop-700 transition-colors ${pSpacingClass}`}
+                >
                   📎 Drag / Upload reference text circular (.txt)
                 </p>
                 <p className="text-[10px] text-stone-400">
@@ -194,7 +226,10 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
 
             {/* Content Textarea */}
             <div className="space-y-1.5">
-              <label htmlFor="doc-content-in" className="text-[11px] font-mono font-bold text-stone-600 uppercase tracking-wider pl-1">
+              <label
+                htmlFor="doc-content-in"
+                className="text-[11px] font-mono font-bold text-stone-600 uppercase tracking-wider pl-1"
+              >
                 {t.docContent}
               </label>
               <textarea
@@ -239,7 +274,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
               id="btn-upload-doc"
               type="submit"
               disabled={submitting || !title || !content}
-              className="w-full bg-crop-600 hover:bg-crop-700 active:bg-crop-800 disabled:bg-stone-200 disabled:text-stone-400 text-white font-sans font-bold py-3.5 px-6 rounded-lg text-xs transition-all shadow-sm flex items-center justify-center gap-2 tracking-wider border-b-2 border-crop-800 uppercase cursor-pointer"
+              className="w-full bg-crop-600 hover:bg-crop-700 active:bg-crop-800 disabled:bg-stone-200 disabled:text-stone-400 text-white font-sans font-bold py-3.5 px-6 rounded-lg text-xs transition-all shadow-sm flex items-center justify-center gap-2 tracking-wider border-b-2 border-crop-800 uppercase cursor-pointer min-h-[44px]"
             >
               {submitting ? (
                 <>
@@ -264,7 +299,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
             <h3 className="text-xs font-mono font-medium tracking-widest text-crop-200 uppercase bg-crop-950/40 px-3 py-1 rounded-full border border-crop-700/20 inline-block">
               📂 Policy Knowledge Cache (RAG)
             </h3>
-            
+
             <h2 className="text-lg font-display font-medium text-white pl-1 text-left">
               {t.currentDocs}
             </h2>
@@ -302,7 +337,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-2.5 text-[9px] font-mono text-stone-300">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-stone-400" />
@@ -334,14 +369,20 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
           </div>
 
           <div className="bg-crop-950/40 p-4 rounded-lg border border-white/5 text-left space-y-1">
-            <p className="text-[10px] font-mono text-crop-200 uppercase tracking-wider">💡 RAG Intelligence Feature</p>
-            <p className="text-[11px] text-stone-200 leading-relaxed font-sans">
-              Rythu Sethu bypasses rigid text matching. Uploading any G.O. details above automatically appends it into the Gemini Chat context. Any farmer can then query it using the Chat tab instantly.
+            <p className="text-[10px] font-mono text-crop-200 uppercase tracking-wider">
+              💡 RAG Intelligence Feature
+            </p>
+            <p
+              className={`text-[11px] text-stone-200 font-sans ${pSpacingClass}`}
+            >
+              Rythu Sethu bypasses rigid text matching. Uploading any G.O.
+              details above automatically appends it into the Gemini Chat
+              context. Any farmer can then query it using the Chat tab
+              instantly.
             </p>
           </div>
         </div>
       </div>
-
     </div>
   );
 }

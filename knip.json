@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/main.tsx", "server.ts"],
+  "project": ["src/**/*.{ts,tsx}", "server.ts"],
+  "rules": {
+    "devDependencies": "off",
+    "types": "off",
+    "exports": "off"
+  }
+}

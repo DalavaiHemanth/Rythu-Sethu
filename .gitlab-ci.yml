@@ -3,8 +3,14 @@
 # This pipeline automates quality checks, linting, Docker image compilation, 
 # and provides templates for multi-destination deployment.
 
+image: node:20-alpine
+
 stages:
-  - quality
+  - test
+  - lint
+  - format
+  - type_check
+  - coverage
   - build
   - deploy
 
@@ -16,43 +22,120 @@ variables:
   IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
   IMAGE_TAG_LATEST: "$CI_REGISTRY_IMAGE:latest"
 
-# ---------------------------------------------------------------------------
-# Stage 1: Quality (Type-checking and Linting)
-# ---------------------------------------------------------------------------
-typecheck-and-lint:
-  stage: quality
-  image: node:20-alpine
-  cache:
-    key:
-      files:
-        - package-lock.json
-    paths:
-      - .npm/
-  before_script:
-    - npm ci --cache .npm --prefer-offline
-  script:
-    # Run the type-checker script
-    - npm run lint
-    # Test compilation to verify there are no esbuild or bundling errors
-    - npm run build
+# Cache node_modules across jobs
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
 
-# ---------------------------------------------------------------------------
-# Stage 2: Containerization (Build & push to GitLab Container Registry)
-# ---------------------------------------------------------------------------
+# Install deps before every job that needs node_modules
+.node_install: &node_install
+  before_script:
+    - npm install --prefer-offline
+
+# ── Stage 1: Test ─────────────────────────────────────────────────────────────
+test:
+  stage: test
+  <<: *node_install
+  script:
+    - npm run test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+dependency_audit:
+  stage: test
+  <<: *node_install
+  script:
+    - npm audit --audit-level=high || true
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+secret_scanning:
+  stage: test
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  script:
+    - gitleaks detect --source=$CI_PROJECT_DIR --verbose --redact || true
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 2: Lint ─────────────────────────────────────────────────────────────
+lint:
+  stage: lint
+  <<: *node_install
+  script:
+    - npm run lint:biome
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 3: Format ───────────────────────────────────────────────────────────
+format:
+  stage: format
+  <<: *node_install
+  script:
+    - npm run format:check
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 4: Type Check ───────────────────────────────────────────────────────
+type_check:
+  stage: type_check
+  <<: *node_install
+  script:
+    - npm run lint
+    - npm run knip
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 5: Coverage ─────────────────────────────────────────────────────────
+coverage:
+  stage: coverage
+  <<: *node_install
+  script:
+    - npm run coverage
+  coverage: '/All files\s*\|\s*([\d\.]+)/'
+  artifacts:
+    name: "coverage-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - coverage/
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 6: Build ────────────────────────────────────────────────────────────
+build:
+  stage: build
+  <<: *node_install
+  script:
+    - npx vite build
+  artifacts:
+    name: "dist-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - dist/
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# Build and push container image to GitLab Container Registry
 build-image:
   stage: build
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
   rules:
-    # Only build and push the container image on the default branch (e.g. main/master) or merge requests
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   before_script:
-    # Login to GitLab's built-in Container Registry
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
   script:
-    # Build container image utilizing Docker caching
     - docker pull $IMAGE_TAG_LATEST || true
     - >
       docker build 
@@ -60,13 +143,19 @@ build-image:
       -t $IMAGE_TAG 
       -t $IMAGE_TAG_LATEST 
       .
-    # Push image to registry
     - docker push $IMAGE_TAG
     - docker push $IMAGE_TAG_LATEST
 
-# ---------------------------------------------------------------------------
-# Stage 3: Deployment (Uncomment & configure the destination of your choice)
-# ---------------------------------------------------------------------------
+# ── Stage 7: Deploy ───────────────────────────────────────────────────────────
+pages:
+  stage: deploy
+  script:
+    - cp -r dist public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # OPTION A: Deploy to Google Cloud Run (Recommended for multi-lingual apps)
 # To use this: Define variables `GCP_SERVICE_KEY`, `GCP_PROJECT_ID`, and `GCP_REGION` in GitLab Settings
