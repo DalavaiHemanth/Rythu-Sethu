@@ -61,7 +61,17 @@ export const TRANSLATIONS = {
     sampleQ6: "How do I register for the 24/7 free agriculture power supply?",
     sampleQ7: "Where can I get certified seeds on a state subsidy?",
     backToQuiz: "Reset Quiz",
-    voiceMuteAlert: "Voice-over output toggled."
+    voiceMuteAlert: "Voice-over output toggled.",
+    apiSettings: "Gemini API Settings",
+    apiKeyLabel: "Enter your personal Gemini API Key",
+    apiKeyPlaceholder: "Paste your API key here (AIzaSy...)",
+    apiKeySave: "Save Key",
+    apiKeyCleared: "API Key cleared successfully!",
+    apiKeySaved: "API Key saved successfully!",
+    apiKeyStatus: "API Key Status:",
+    apiKeyStatusActive: "✅ Active (Using your custom API key)",
+    apiKeyStatusEmpty: "⚠️ No personal key (Calls relative backend /api/*)",
+    apiClose: "Close"
   },
   te: {
     appName: "రైతు సేతు",
@@ -125,7 +135,17 @@ export const TRANSLATIONS = {
     sampleQ6: "రైతులకు 24 గంటల ఉచిత నాణ్యమైన విద్యుత్ ఎలా లభిస్తుంది?",
     sampleQ7: "సబ్సిడీ కింద నాణ్యమైన విత్తనాలు ఎక్కడ మరియు ఎలా పొందాలి?",
     backToQuiz: "తిరిగి క్విజ్ ప్రారంభించండి",
-    voiceMuteAlert: "స్వర అవుట్‌పుట్ మార్చబడింది."
+    voiceMuteAlert: "స్వర అవుట్‌పుట్ మార్చబడింది.",
+    apiSettings: "జెమిని ఏపీఐ సెట్టింగులు",
+    apiKeyLabel: "మీ వ్యక్తిగత జెమిని ఏపీఐ కీని నమోదు చేయండి",
+    apiKeyPlaceholder: "మీ ఏపీఐ కీని ఇక్కడ పేస్ట్ చేయండి (AIzaSy...)",
+    apiKeySave: "కీని సేవ్ చేయండి",
+    apiKeyCleared: "ఏపీఐ కీ విజయవంతంగా తొలగించబడింది!",
+    apiKeySaved: "ఏపీఐ కీ విజయవంతంగా సేవ్ చేయబడింది!",
+    apiKeyStatus: "ఏపీఐ కీ స్థితి:",
+    apiKeyStatusActive: "✅ యాక్టివ్ (మీ వ్యక్తిగత ఏపీఐ కీ ఉపయోగించబడుతోంది)",
+    apiKeyStatusEmpty: "⚠️ వ్యక్తిగత కీ లేదు (బ్యాకెండ్ /api/* సర్వర్‌ని పిలుస్తుంది)",
+    apiClose: "మూసివేయి"
   },
   ur: {
     appName: "ریتھو سیتھو",
@@ -189,7 +209,17 @@ export const TRANSLATIONS = {
     sampleQ6: "حکومت کی 24 گھنٹے مفت زرعی بجلی اسکیم کا فائدہ کیسے اٹھائیں؟",
     sampleQ7: "مجھے ریاستی سبسڈی پر تصدیق شدہ بیج کہاں سے مل سکتے ہیں؟",
     backToQuiz: "دوبارہ کوئز شروع کریں",
-    voiceMuteAlert: "آواز کی ترتیبات تبدیل کر دی گئیں۔"
+    voiceMuteAlert: "آواز کی ترتیبات تبدیل کر دی گئیں۔",
+    apiSettings: "جیمنی API کی ترتیبات",
+    apiKeyLabel: "اپنی ذاتی جیمنی API کی درج کریں",
+    apiKeyPlaceholder: "اپنی API کی یہاں چسپاں کریں (AIzaSy...)",
+    apiKeySave: "کی محفوظ کریں",
+    apiKeyCleared: "API کی کامیابی سے حذف ہو گئی!",
+    apiKeySaved: "API کی کامیابی سے محفوظ ہو گئی!",
+    apiKeyStatus: "API کی کی حالت:",
+    apiKeyStatusActive: "✅ فعال (آپ کی ذاتی API کی استعمال ہو رہی ہے)",
+    apiKeyStatusEmpty: "⚠️ کوئی ذاتی کی نہیں ہے (بیک اینڈ سرور استعمال ہو گا)",
+    apiClose: "بند کریں"
   }
 };
 export type LanguageKey = 'en' | 'te' | 'ur';
