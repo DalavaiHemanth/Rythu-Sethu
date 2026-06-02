@@ -1,7 +1,22 @@
+import {
+  AlertCircle,
+  Camera,
+  Check,
+  Compass,
+  Copy,
+  Image,
+  Mic,
+  RefreshCw,
+  Send,
+  Sparkles,
+  Trash2,
+  User,
+  Volume2,
+  VolumeX,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Send, Mic, Volume2, VolumeX, Image, RefreshCw, Sparkles, User, AlertCircle, Trash2, Camera, Compass, Copy, Check } from 'lucide-react';
-import { TRANSLATIONS, LanguageKey } from '../data/translations';
+import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { Message } from '../types';
 
 interface ChatbotProps {
@@ -10,7 +25,11 @@ interface ChatbotProps {
   selectedDistrict: string;
 }
 
-export default function Chatbot({ language, quizAnswers, selectedDistrict }: ChatbotProps) {
+export default function Chatbot({
+  language,
+  quizAnswers,
+  selectedDistrict,
+}: ChatbotProps) {
   const t = TRANSLATIONS[language];
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -18,7 +37,10 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
       role: 'assistant',
       content: getWelcomeMessage(language),
       language: language,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
     },
   ]);
 
@@ -28,7 +50,7 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
   const [isSoundOn, setIsSoundOn] = useState<boolean>(true);
   const [isListening, setIsListening] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
+
   // Accessibility state for elder farmers reading intricate scripts
   const [textSize, setTextSize] = useState<'sm' | 'md' | 'lg' | 'xl'>('md');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -42,7 +64,9 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
           setLoadedDocsCount(data.length);
         }
       })
-      .catch((err) => console.error('Error fetching docs count for sidebar:', err));
+      .catch((err) =>
+        console.error('Error fetching docs count for sidebar:', err)
+      );
   }, []);
 
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -57,20 +81,31 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
     }, 2000);
   };
 
-  const getMessageTextClass = (isTe: boolean, size: 'sm' | 'md' | 'lg' | 'xl') => {
+  const getMessageTextClass = (
+    isTe: boolean,
+    size: 'sm' | 'md' | 'lg' | 'xl'
+  ) => {
     if (isTe) {
       switch (size) {
-        case 'sm': return 'text-[13px] leading-relaxed font-telugu font-semibold text-stone-850';
-        case 'md': return 'text-[16px] leading-relaxed font-telugu font-semibold text-stone-900';
-        case 'lg': return 'text-[19px] leading-relaxed font-telugu font-bold text-stone-950 border-l-2 border-crop-200 pl-3 bg-crop-50/10 py-0.5';
-        case 'xl': return 'text-[22px] leading-relaxed font-telugu font-black text-stone-950 border-l-2 border-crop-600 pl-3 bg-crop-50/20 py-1';
+        case 'sm':
+          return 'text-[13px] leading-relaxed font-telugu font-semibold text-stone-850';
+        case 'md':
+          return 'text-[16px] leading-relaxed font-telugu font-semibold text-stone-900';
+        case 'lg':
+          return 'text-[19px] leading-relaxed font-telugu font-bold text-stone-950 border-l-2 border-crop-200 pl-3 bg-crop-50/10 py-0.5';
+        case 'xl':
+          return 'text-[22px] leading-relaxed font-telugu font-black text-stone-950 border-l-2 border-crop-600 pl-3 bg-crop-50/20 py-1';
       }
     } else {
       switch (size) {
-        case 'sm': return 'text-[11px] leading-relaxed font-sans font-medium text-stone-700';
-        case 'md': return 'text-xs md:text-sm leading-relaxed font-sans font-semibold text-stone-850';
-        case 'lg': return 'text-sm md:text-base leading-relaxed font-sans font-bold text-stone-900';
-        case 'xl': return 'text-base md:text-lg leading-relaxed font-sans font-bold text-stone-950';
+        case 'sm':
+          return 'text-[11px] leading-relaxed font-sans font-medium text-stone-700';
+        case 'md':
+          return 'text-xs md:text-sm leading-relaxed font-sans font-semibold text-stone-850';
+        case 'lg':
+          return 'text-sm md:text-base leading-relaxed font-sans font-bold text-stone-900';
+        case 'xl':
+          return 'text-base md:text-lg leading-relaxed font-sans font-bold text-stone-950';
       }
     }
   };
@@ -78,9 +113,9 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
   // Dynamic welcome message loader
   function getWelcomeMessage(lang: LanguageKey): string {
     const texts = {
-      en: "Namaste! I am Rythu Sethu, your personal agri-expert chatbot. Ask me crop issues, Telangana schemes (like Rythu Bharosa or Rythu Bima), or attach crop leaves photos for analysis!",
-      te: "నమస్తే రైతు సోదరులకు! నేను మీ రైతు సేతు వ్యవసాయ సలహాదారును. మీ పంటల సమస్యలు, తెలంగాణ పథకాల అర్హత గురించి అడగండి లేదా తెగుళ్ళు గుర్తించడానికి ఆకుల ఫోటోలను పంపించండి!",
-      ur: "نمستے! زرعی ماہر چیٹ بوٹ ریتھو سیتھو میں خوش آمدید۔ مجھ سے اپنی فصلوں، کھادوں، تلنگانہ حکومت کی اسکیموں جیسے ریتھو بھروسہ کے بارے میں کچھ بھی پوچھیں۔"
+      en: 'Namaste! I am Rythu Sethu, your personal agri-expert chatbot. Ask me crop issues, Telangana schemes (like Rythu Bharosa or Rythu Bima), or attach crop leaves photos for analysis!',
+      te: 'నమస్తే రైతు సోదరులకు! నేను మీ రైతు సేతు వ్యవసాయ సలహాదారును. మీ పంటల సమస్యలు, తెలంగాణ పథకాల అర్హత గురించి అడగండి లేదా తెగుళ్ళు గుర్తించడానికి ఆకుల ఫోటోలను పంపించండి!',
+      ur: 'نمستے! زرعی ماہر چیٹ بوٹ ریتھو سیتھو میں خوش آمدید۔ مجھ سے اپنی فصلوں، کھادوں، تلنگانہ حکومت کی اسکیموں جیسے ریتھو بھروسہ کے بارے میں کچھ بھی پوچھیں۔',
     };
     return texts[lang];
   }
@@ -91,7 +126,11 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
   }, [messages, isLoading]);
 
   // Read Aloud Text (Speech Synthesis)
-  const speakText = (text: string, msgLanguage?: LanguageKey, isAutoPlay: boolean = false) => {
+  const speakText = (
+    text: string,
+    msgLanguage?: LanguageKey,
+    isAutoPlay = false
+  ) => {
     if (!window.speechSynthesis) return;
     if (isAutoPlay && !isSoundOn) return;
 
@@ -105,7 +144,7 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
       .substring(0, 350); // Truncate read lengths for farmer safety
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    
+
     // Choose voice locales based on the appropriate language
     const speechLang = msgLanguage || language;
     if (speechLang === 'te') {
@@ -119,8 +158,11 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
     // Attempt to match system voices accurately if available
     if (window.speechSynthesis.getVoices) {
       const voices = window.speechSynthesis.getVoices();
-      const prefix = speechLang === 'te' ? 'te' : speechLang === 'ur' ? 'ur' : 'en';
-      const matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith(prefix));
+      const prefix =
+        speechLang === 'te' ? 'te' : speechLang === 'ur' ? 'ur' : 'en';
+      const matchedVoice = voices.find((v) =>
+        v.lang.toLowerCase().startsWith(prefix)
+      );
       if (matchedVoice) {
         utterance.voice = matchedVoice;
       }
@@ -149,12 +191,14 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
 
   // Native Web Speech Recognition Initialization
   useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       const rec = new SpeechRecognition();
       rec.continuous = false;
       rec.interimResults = false;
-      
+
       // Target appropriate recognition locale
       if (language === 'te') rec.lang = 'te-IN';
       else if (language === 'ur') rec.lang = 'ur-IN';
@@ -174,7 +218,9 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
 
       rec.onerror = (event: any) => {
         console.error('Speech recognition error', event);
-        setErrorMessage('Speech input could not be processed. Please check mic permissions or type manually.');
+        setErrorMessage(
+          'Speech input could not be processed. Please check mic permissions or type manually.'
+        );
         setIsListening(false);
         setTimeout(() => setErrorMessage(null), 4000);
       };
@@ -189,7 +235,9 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
 
   const handleMicPress = () => {
     if (!recognitionRef.current) {
-      setErrorMessage('Speech recognition is not fully supported on this device/browser. Please type your query.');
+      setErrorMessage(
+        'Speech recognition is not fully supported on this device/browser. Please type your query.'
+      );
       setTimeout(() => setErrorMessage(null), 3000);
       return;
     }
@@ -207,7 +255,9 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      setErrorMessage('Photo size exceeds 10MB limit. Please select a compressed image file.');
+      setErrorMessage(
+        'Photo size exceeds 10MB limit. Please select a compressed image file.'
+      );
       setTimeout(() => setErrorMessage(null), 4000);
       return;
     }
@@ -240,7 +290,10 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
       role: 'user',
       content: finalContent,
       language: language,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
       image: attachedImage || undefined,
     };
 
@@ -257,34 +310,43 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
         body: JSON.stringify({
           messages: messageHistory,
           quizAnswers: quizAnswers || undefined,
-          locationInfo: selectedDistrict ? { district: selectedDistrict } : undefined,
+          locationInfo: selectedDistrict
+            ? { district: selectedDistrict }
+            : undefined,
           language: language,
         }),
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Server returned an error answering your advice request.');
+        throw new Error(
+          errData.error ||
+            'Server returned an error answering your advice request.'
+        );
       }
 
       const data = await res.json();
-      
+
       const assistantMessage: Message = {
         id: `m_${Date.now() + 1}`,
         role: 'assistant',
         content: data.reply,
         language: language,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-      
+
       // Auto speak aloud if audio is on
       speakText(data.reply, language, true);
-
     } catch (err: any) {
       console.error(err);
-      setErrorMessage(err.message || 'Connecting to backend agri-server failed.');
+      setErrorMessage(
+        err.message || 'Connecting to backend agri-server failed.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -303,15 +365,20 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
         role: 'assistant',
         content: getWelcomeMessage(language),
         language: language,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
       },
     ]);
     if (window.speechSynthesis) window.speechSynthesis.cancel();
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-transparent h-full min-h-[580px]" id="chatbot-component">
-      
+    <div
+      className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-transparent h-full min-h-[580px]"
+      id="chatbot-component"
+    >
       {/* Sample presets panel */}
       <div className="lg:col-span-3 space-y-4 text-left hidden lg:block">
         <div className="bg-white p-5 rounded-xl border border-earth-100 shadow-xs">
@@ -320,14 +387,24 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
             {t.sampleQTitle}
           </h3>
           <div className="space-y-2.5 max-h-[380px] overflow-y-auto custom-scrollbar pr-1">
-            {[t.sampleQ1, t.sampleQ2, t.sampleQ3, t.sampleQ4, (t as any).sampleQ5, (t as any).sampleQ6, (t as any).sampleQ7]
+            {[
+              t.sampleQ1,
+              t.sampleQ2,
+              t.sampleQ3,
+              t.sampleQ4,
+              (t as any).sampleQ5,
+              (t as any).sampleQ6,
+              (t as any).sampleQ7,
+            ]
               .filter(Boolean)
               .map((qText, index) => (
                 <button
                   key={index}
                   onClick={() => handlePresetClick(qText)}
                   className={`w-full text-left bg-stone-50 hover:bg-crop-50 hover:text-crop-900 hover:border-crop-200 p-2.5 rounded-lg border border-earth-100 transition-all leading-snug font-medium cursor-pointer ${
-                    language === 'te' ? 'text-[12.5px] font-telugu' : 'text-[11px] font-sans'
+                    language === 'te'
+                      ? 'text-[12.5px] font-telugu'
+                      : 'text-[11px] font-sans'
                   }`}
                 >
                   {qText}
@@ -338,19 +415,40 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
 
         {/* Farmer Dashboard Side Panel info */}
         <div className="bg-crop-900 text-white p-5 rounded-xl border border-crop-950 shadow-xs text-xs space-y-2">
-          <p className="font-mono text-crop-200 uppercase text-[9px] tracking-wider">🌾 Active Farm Profile</p>
+          <p className="font-mono text-crop-200 uppercase text-[9px] tracking-wider">
+            🌾 Active Farm Profile
+          </p>
           <div className="space-y-1.5 text-[11px] text-stone-200">
-            <p>• District Context: <span className="font-bold text-white uppercase">{selectedDistrict || "Not Selected"}</span></p>
-            <p>• Eligibility Card: <span className="font-bold text-white uppercase">{quizAnswers ? "Filled" : "Not Done"}</span></p>
-            <p>• Speech Read Aloud: <span className="font-bold text-white uppercase">{isSoundOn ? "Active" : "Silent"}</span></p>
-            <p>• Gov Orders (RAG): <span className="font-bold text-white uppercase">{loadedDocsCount} loaded</span></p>
+            <p>
+              • District Context:{' '}
+              <span className="font-bold text-white uppercase">
+                {selectedDistrict || 'Not Selected'}
+              </span>
+            </p>
+            <p>
+              • Eligibility Card:{' '}
+              <span className="font-bold text-white uppercase">
+                {quizAnswers ? 'Filled' : 'Not Done'}
+              </span>
+            </p>
+            <p>
+              • Speech Read Aloud:{' '}
+              <span className="font-bold text-white uppercase">
+                {isSoundOn ? 'Active' : 'Silent'}
+              </span>
+            </p>
+            <p>
+              • Gov Orders (RAG):{' '}
+              <span className="font-bold text-white uppercase">
+                {loadedDocsCount} loaded
+              </span>
+            </p>
           </div>
         </div>
       </div>
 
       {/* Main chat center */}
       <div className="lg:col-span-9 flex flex-col justify-between bg-white rounded-xl border border-earth-100 overflow-hidden shadow-xs h-full min-h-[540px]">
-        
         {/* Header Controls */}
         <div className="px-5 py-4 border-b border-earth-100 bg-earth-50/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -359,8 +457,12 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-crop-600"></span>
             </span>
             <div>
-              <h2 className="text-sm font-display font-medium text-crop-900">{t.chatTab}</h2>
-              <p className="text-[10px] text-stone-500 font-mono">Model: Gemini Flash v2.0</p>
+              <h2 className="text-sm font-display font-medium text-crop-900">
+                {t.chatTab}
+              </h2>
+              <p className="text-[10px] text-stone-500 font-mono">
+                Model: Gemini Flash v2.0
+              </p>
             </div>
           </div>
 
@@ -373,7 +475,7 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
             >
               <Trash2 className="w-4 h-4" />
             </button>
-            
+
             {/* Sound Toggle */}
             <button
               onClick={toggleSound}
@@ -384,7 +486,11 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
               }`}
               title={isSoundOn ? t.audioOn : t.audioOff}
             >
-              {isSoundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              {isSoundOn ? (
+                <Volume2 className="w-4 h-4" />
+              ) : (
+                <VolumeX className="w-4 h-4" />
+              )}
             </button>
           </div>
         </div>
@@ -395,7 +501,12 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
             <span className="text-[11px] font-mono font-medium text-stone-600 uppercase tracking-wider flex items-center gap-1 shrink-0">
               <span>🌾</span>
               <span>
-                {language === 'te' ? 'అక్షరాల సైజు' : language === 'ur' ? 'حروف کا سائز' : 'Text Size'}:
+                {language === 'te'
+                  ? 'అక్షరాల సైజు'
+                  : language === 'ur'
+                    ? 'حروف کا سائز'
+                    : 'Text Size'}
+                :
               </span>
             </span>
             <div className="inline-flex rounded-md p-0.5 bg-stone-200 border border-stone-300/35">
@@ -409,10 +520,21 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
                       : 'text-stone-600 hover:text-stone-900 hover:bg-stone-300/30'
                   }`}
                 >
-                  {sz === 'sm' ? (language === 'te' ? 'చిన్నది' : 'S') :
-                   sz === 'md' ? (language === 'te' ? 'సాధారణ' : 'M') :
-                   sz === 'lg' ? (language === 'te' ? 'పెద్దది' : 'L') :
-                   (language === 'te' ? 'అతి పెద్దది' : 'XL')}
+                  {sz === 'sm'
+                    ? language === 'te'
+                      ? 'చిన్నది'
+                      : 'S'
+                    : sz === 'md'
+                      ? language === 'te'
+                        ? 'సాధారణ'
+                        : 'M'
+                      : sz === 'lg'
+                        ? language === 'te'
+                          ? 'పెద్దది'
+                          : 'L'
+                        : language === 'te'
+                          ? 'అతి పెద్దది'
+                          : 'XL'}
                 </button>
               ))}
             </div>
@@ -420,7 +542,12 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
 
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-crop-800 font-sans font-medium px-2 py-0.5 rounded-md bg-crop-50 border border-crop-150/40 leading-normal">
-              💡 {language === 'te' ? 'తెలుగు అక్షరాలు స్పష్టంగా చదవడానికి సహాయపడుతుంది' : language === 'ur' ? 'اردو پڑھنے میں آسان رہنمائی' : 'Optimized for senior farmer reading clarity'}
+              💡{' '}
+              {language === 'te'
+                ? 'తెలుగు అక్షరాలు స్పష్టంగా చదవడానికి సహాయపడుతుంది'
+                : language === 'ur'
+                  ? 'اردو پڑھنے میں آسان رہنمائی'
+                  : 'Optimized for senior farmer reading clarity'}
             </span>
           </div>
         </div>
@@ -438,37 +565,49 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
                   transition={{ duration: 0.22 }}
                   className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full`}
                 >
-                  <div className={`flex items-start gap-2.5 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                    
+                  <div
+                    className={`flex items-start gap-2.5 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+                  >
                     {/* Role Icon */}
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border text-xs shrink-0 ${
-                      isUser
-                        ? 'bg-crop-900 border-crop-950 text-white'
-                        : 'bg-crop-600 border-crop-800 text-white'
-                    }`}>
-                      {isUser ? <User className="w-4.5 h-4.5" /> : <Sparkles className="w-4.5 h-4.5 animate-pulse" />}
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center border text-xs shrink-0 ${
+                        isUser
+                          ? 'bg-crop-900 border-crop-950 text-white'
+                          : 'bg-crop-600 border-crop-800 text-white'
+                      }`}
+                    >
+                      {isUser ? (
+                        <User className="w-4.5 h-4.5" />
+                      ) : (
+                        <Sparkles className="w-4.5 h-4.5 animate-pulse" />
+                      )}
                     </div>
 
                     {/* Chat Bubble Body */}
                     <div className="space-y-1.5 flex-1 max-w-[88%]">
-                      <div className={`p-4 rounded-xl relative group/bubble transition-all ${
-                        isUser
-                          ? 'bg-crop-600 text-white rounded-tr-none text-right shadow-xs'
-                          : 'bg-white text-stone-800 border border-earth-100 rounded-tl-none pr-8 text-left shadow-2xs hover:border-earth-200'
-                      }`}>
-                        
+                      <div
+                        className={`p-4 rounded-xl relative group/bubble transition-all ${
+                          isUser
+                            ? 'bg-crop-600 text-white rounded-tr-none text-right shadow-xs'
+                            : 'bg-white text-stone-800 border border-earth-100 rounded-tl-none pr-8 text-left shadow-2xs hover:border-earth-200'
+                        }`}
+                      >
                         {/* Copy and Speak out visual actions */}
                         {!isUser && (
                           <div className="absolute right-2 top-2 flex items-center gap-1 opacity-100 sm:opacity-0 group-hover/bubble:opacity-100 transition-all">
                             <button
-                              onClick={() => speakText(msg.content, msg.language)}
+                              onClick={() =>
+                                speakText(msg.content, msg.language)
+                              }
                               className="p-1.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-600 hover:text-emerald-800 transition-all cursor-pointer shadow-3xs"
                               title="Speak advice aloud"
                             >
                               <Volume2 className="w-3.5 h-3.5" />
                             </button>
                             <button
-                              onClick={() => handleCopyText(msg.content, msg.id)}
+                              onClick={() =>
+                                handleCopyText(msg.content, msg.id)
+                              }
                               className="p-1.5 rounded-md bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-400 hover:text-crop-800 transition-all cursor-pointer shadow-3xs"
                               title="Copy advice text"
                             >
@@ -493,21 +632,28 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
                           </div>
                         )}
 
-                        <RichText 
-                          content={msg.content} 
-                          language={msg.language} 
+                        <RichText
+                          content={msg.content}
+                          language={msg.language}
                           textSize={textSize}
                           isUser={isUser}
                         />
                       </div>
-                      
-                      <div className={`text-[9px] font-mono text-stone-500 uppercase px-2 flex gap-2 items-center ${isUser ? 'justify-end' : 'justify-start'}`}>
+
+                      <div
+                        className={`text-[9px] font-mono text-stone-500 uppercase px-2 flex gap-2 items-center ${isUser ? 'justify-end' : 'justify-start'}`}
+                      >
                         <span>{msg.timestamp}</span>
                         <span>•</span>
-                        <span>{msg.language === 'te' ? 'Telugu' : msg.language === 'ur' ? 'Urdu' : 'English'}</span>
+                        <span>
+                          {msg.language === 'te'
+                            ? 'Telugu'
+                            : msg.language === 'ur'
+                              ? 'Urdu'
+                              : 'English'}
+                        </span>
                       </div>
                     </div>
-
                   </div>
                 </motion.div>
               );
@@ -538,16 +684,27 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
 
         {/* Input Area Form & Logs overlays */}
         <div className="p-4 border-t border-earth-100 bg-earth-50/20 space-y-3">
-          
           {/* Diagnostic upload strip preview */}
           {image && (
             <div className="flex items-center gap-3 bg-white p-2 rounded-lg border border-earth-100 text-xs text-stone-700 w-fit max-w-[280px]">
               <div className="w-10 h-10 rounded-md overflow-hidden border border-earth-100 shrink-0 bg-stone-50">
-                <img src={image} alt="crop-attached-preview" className="object-cover w-full h-full" referrerPolicy="no-referrer" />
+                <img
+                  src={image}
+                  alt="crop-attached-preview"
+                  className="object-cover w-full h-full"
+                  referrerPolicy="no-referrer"
+                />
               </div>
               <div className="truncate flex-1">
-                <p className="font-semibold text-stone-800 tracking-tight text-[11px]">{t.photoTip}</p>
-                <button onClick={removeAttachedImage} className="text-[10px] text-red-500 hover:underline font-bold mt-0.5 pointer-events-auto">Remove Photo</button>
+                <p className="font-semibold text-stone-800 tracking-tight text-[11px]">
+                  {t.photoTip}
+                </p>
+                <button
+                  onClick={removeAttachedImage}
+                  className="text-[10px] text-red-500 hover:underline font-bold mt-0.5 pointer-events-auto"
+                >
+                  Remove Photo
+                </button>
               </div>
             </div>
           )}
@@ -577,7 +734,10 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
                   {t.listening}
                 </span>
-                <button onClick={() => recognitionRef.current?.stop()} className="text-[10px] uppercase font-mono px-2 py-1 tracking-wider text-crop-200 border border-crop-700 bg-crop-950 rounded hover:text-white cursor-pointer">
+                <button
+                  onClick={() => recognitionRef.current?.stop()}
+                  className="text-[10px] uppercase font-mono px-2 py-1 tracking-wider text-crop-200 border border-crop-700 bg-crop-950 rounded hover:text-white cursor-pointer"
+                >
                   Stop Recording
                 </button>
               </motion.div>
@@ -645,7 +805,6 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
           </div>
         </div>
       </div>
-
     </div>
   );
 }
@@ -664,30 +823,44 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
 
   // Custom typography styles for Telugu/Urdu vs English
   // We apply increased line-height (leading-[1.95] or [1.9]) and larger character/letter spacing (tracking-[0.03em]) for better legibility on low-resolution mobile devices
-  const baseClasses = isTe 
-    ? "font-telugu tracking-[0.035em] leading-[1.95] text-left" 
-    : isUr 
-    ? "font-sans tracking-[0.04em] leading-[1.95] text-left" 
-    : "font-sans tracking-normal leading-relaxed text-left";
+  const baseClasses = isTe
+    ? 'font-telugu tracking-[0.035em] leading-[1.95] text-left'
+    : isUr
+      ? 'font-sans tracking-[0.04em] leading-[1.95] text-left'
+      : 'font-sans tracking-normal leading-relaxed text-left';
 
-  const textColorClass = isUser 
-    ? "text-white" 
-    : "text-stone-850";
+  const textColorClass = isUser ? 'text-white' : 'text-stone-850';
 
-  let sizeClass = "";
+  let sizeClass = '';
   if (isSpecial) {
     switch (textSize) {
-      case 'sm': sizeClass = "text-[14px]"; break;
-      case 'md': sizeClass = "text-[16px]"; break;
-      case 'lg': sizeClass = "text-[18.5px] font-medium"; break;
-      case 'xl': sizeClass = "text-[21.5px] font-semibold"; break;
+      case 'sm':
+        sizeClass = 'text-[14px]';
+        break;
+      case 'md':
+        sizeClass = 'text-[16px]';
+        break;
+      case 'lg':
+        sizeClass = 'text-[18.5px] font-medium';
+        break;
+      case 'xl':
+        sizeClass = 'text-[21.5px] font-semibold';
+        break;
     }
   } else {
     switch (textSize) {
-      case 'sm': sizeClass = "text-[11.5px]"; break;
-      case 'md': sizeClass = "text-xs md:text-sm"; break;
-      case 'lg': sizeClass = "text-sm md:text-base"; break;
-      case 'xl': sizeClass = "text-base md:text-lg"; break;
+      case 'sm':
+        sizeClass = 'text-[11.5px]';
+        break;
+      case 'md':
+        sizeClass = 'text-xs md:text-sm';
+        break;
+      case 'lg':
+        sizeClass = 'text-sm md:text-base';
+        break;
+      case 'xl':
+        sizeClass = 'text-base md:text-lg';
+        break;
     }
   }
 
@@ -705,15 +878,15 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
     return parts.map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return (
-          <strong 
-            key={index} 
+          <strong
+            key={index}
             className={`font-black ${isUser ? 'text-white underline decoration-white/35 decoration-2' : 'text-crop-950 font-extrabold bg-crop-50/40 px-0.5 rounded'}`}
           >
             {part.slice(2, -2)}
           </strong>
         );
       }
-      
+
       if (part.startsWith('[') && part.includes('](')) {
         // Match link format [Label](URL)
         const match = part.match(/^\[(.*?)\]\((.*?)\)$/);
@@ -727,8 +900,8 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
               target="_blank"
               rel="noopener noreferrer"
               className={`underline font-bold transition-all ${
-                isUser 
-                  ? 'text-white hover:text-stone-100 decoration-white/50' 
+                isUser
+                  ? 'text-white hover:text-stone-100 decoration-white/50'
                   : 'text-crop-700 hover:text-crop-900 decoration-crop-300'
               }`}
             >
@@ -740,8 +913,8 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
 
       if (part.startsWith('`') && part.endsWith('`')) {
         return (
-          <code 
-            key={index} 
+          <code
+            key={index}
             className={`font-mono text-[0.85em] px-1.5 py-0.5 rounded border transition-colors ${
               isUser
                 ? 'bg-crop-800/60 border-crop-500 text-white'
@@ -758,7 +931,10 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
   };
 
   return (
-    <div className={`space-y-3 ${baseClasses} ${sizeClass} ${textColorClass}`} id="rich-text-container">
+    <div
+      className={`space-y-3 ${baseClasses} ${sizeClass} ${textColorClass}`}
+      id="rich-text-container"
+    >
       {lines.map((line, idx) => {
         const trimmed = line.trim();
         if (trimmed === '') {
@@ -770,15 +946,16 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
         if (headerMatch) {
           const level = headerMatch[1].length;
           const text = headerMatch[2];
-          
-          let hClass = "font-black tracking-tight my-2 block";
-          if (level === 1) hClass += " text-base md:text-lg border-b pb-1";
-          else if (level === 2) hClass += " text-sm md:text-base border-b pb-0.5";
-          else hClass += " text-xs md:text-sm";
 
-          const headerColor = isUser 
-            ? "text-white border-white/10" 
-            : "text-crop-900 border-stone-100";
+          let hClass = 'font-black tracking-tight my-2 block';
+          if (level === 1) hClass += ' text-base md:text-lg border-b pb-1';
+          else if (level === 2)
+            hClass += ' text-sm md:text-base border-b pb-0.5';
+          else hClass += ' text-xs md:text-sm';
+
+          const headerColor = isUser
+            ? 'text-white border-white/10'
+            : 'text-crop-900 border-stone-100';
 
           return (
             <span key={idx} className={`${hClass} ${headerColor}`}>
@@ -790,23 +967,32 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
         // 2. Blockquotes (> blockquote)
         if (trimmed.startsWith('>')) {
           const text = trimmed.substring(1).trim();
-          const quoteBg = isUser 
-            ? "bg-crop-850/30 border-white/20 select-none" 
-            : "bg-stone-50 border-crop-300";
+          const quoteBg = isUser
+            ? 'bg-crop-850/30 border-white/20 select-none'
+            : 'bg-stone-50 border-crop-300';
           return (
-            <blockquote key={idx} className={`border-l-3 pl-3 py-1 my-2 rounded-r-md ${quoteBg} italic`}>
+            <blockquote
+              key={idx}
+              className={`border-l-3 pl-3 py-1 my-2 rounded-r-md ${quoteBg} italic`}
+            >
               {renderInlineStyles(text)}
             </blockquote>
           );
         }
 
         // 3. Unordered Lists (- list, * list, • list)
-        if (trimmed.startsWith('-') || trimmed.startsWith('*') || trimmed.startsWith('•')) {
+        if (
+          trimmed.startsWith('-') ||
+          trimmed.startsWith('*') ||
+          trimmed.startsWith('•')
+        ) {
           const cleanText = trimmed.replace(/^[-*•]\s+/, '').trim();
-          const bulletColor = isUser ? "text-white" : "text-crop-600";
+          const bulletColor = isUser ? 'text-white' : 'text-crop-600';
           return (
             <div key={idx} className="flex items-start gap-2.5 pl-1 my-1">
-              <span className={`text-[1.1em] leading-none select-none font-black ${bulletColor}`}>
+              <span
+                className={`text-[1.1em] leading-none select-none font-black ${bulletColor}`}
+              >
                 •
               </span>
               <div className="flex-1 leading-relaxed">
@@ -821,12 +1007,14 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
         if (numberedMatch) {
           const num = numberedMatch[1];
           const cleanText = numberedMatch[2];
-          const numBg = isUser 
-            ? "bg-crop-800 text-white border-crop-700" 
-            : "bg-crop-50 text-crop-800 border-crop-150";
+          const numBg = isUser
+            ? 'bg-crop-800 text-white border-crop-700'
+            : 'bg-crop-50 text-crop-800 border-crop-150';
           return (
             <div key={idx} className="flex items-start gap-2.5 pl-1 my-1">
-              <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border select-none shrink-0 mt-0.5 ${numBg}`}>
+              <span
+                className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border select-none shrink-0 mt-0.5 ${numBg}`}
+              >
                 {num}
               </span>
               <div className="flex-1 leading-relaxed">

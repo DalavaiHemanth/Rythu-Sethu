@@ -1,13 +1,25 @@
+import {
+  BookOpen,
+  Calculator,
+  ChevronRight,
+  FileCheck2,
+  FileText,
+  Landmark,
+  Languages,
+  MapPin,
+  PhoneCall,
+  Sparkles,
+  Wheat,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Wheat, Languages, Landmark, Sparkles, BookOpen, FileCheck2, MapPin, ChevronRight, PhoneCall, FileText, Calculator } from 'lucide-react';
-import { TRANSLATIONS, LanguageKey } from './data/translations';
-import { TELANGANA_DISTRICTS_EN } from './data/staticData';
-import Chatbot from './components/Chatbot';
-import SchemeQuiz from './components/SchemeQuiz';
 import CenterFinder from './components/CenterFinder';
-import KnowledgeBase from './components/KnowledgeBase';
+import Chatbot from './components/Chatbot';
 import FarmerTools from './components/FarmerTools';
+import KnowledgeBase from './components/KnowledgeBase';
+import SchemeQuiz from './components/SchemeQuiz';
+import { TELANGANA_DISTRICTS_EN } from './data/staticData';
+import { LanguageKey, TRANSLATIONS } from './data/translations';
 
 interface AgriNewsItem {
   id: number;
@@ -17,10 +29,15 @@ interface AgriNewsItem {
 
 export default function App() {
   const [language, setLanguage] = useState<LanguageKey>('te'); // Default to Telugu as per state target!
-  const [activeTab, setActiveTab] = useState<'chat' | 'quiz' | 'map' | 'rag' | 'tools'>('chat');
-  
+  const [activeTab, setActiveTab] = useState<
+    'chat' | 'quiz' | 'map' | 'rag' | 'tools'
+  >('chat');
+
   // Shared farm profile context
-  const [quizAnswers, setQuizAnswers] = useState<Record<string, boolean> | null>(() => {
+  const [quizAnswers, setQuizAnswers] = useState<Record<
+    string,
+    boolean
+  > | null>(() => {
     try {
       const saved = localStorage.getItem('rythu_sethu_quiz_answers');
       return saved ? JSON.parse(saved) : null;
@@ -29,7 +46,7 @@ export default function App() {
     }
   });
   const [selectedDistrict, setSelectedDistrict] = useState<string>('Siddipet'); // Seed default
-  
+
   // News Ticker state
   const [news, setNews] = useState<AgriNewsItem[]>([]);
   const [newsIndex, setNewsIndex] = useState<number>(0);
@@ -67,8 +84,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-earth-50 flex flex-col font-sans select-none" id="rythu-sethu-app">
-      
+    <div
+      className="min-h-screen bg-earth-50 flex flex-col font-sans select-none"
+      id="rythu-sethu-app"
+    >
       {/* 1. Global Marquee / Emergency State Ticker */}
       <div className="bg-crop-900 border-b border-crop-950 text-white py-2 px-4 shadow-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between text-xs font-mono font-medium md:px-6">
@@ -77,7 +96,9 @@ export default function App() {
               Sahaayam
             </span>
             <span className="truncate text-stone-200">
-              {news.length > 0 ? news[newsIndex].title : "Farmers State Advisory Portal Live."}
+              {news.length > 0
+                ? news[newsIndex].title
+                : 'Farmers State Advisory Portal Live.'}
             </span>
           </div>
           <div className="hidden sm:flex items-center gap-1 text-stone-300">
@@ -88,8 +109,10 @@ export default function App() {
               onChange={(e) => setSelectedDistrict(e.target.value)}
               className="bg-stone-800 text-white font-mono font-semibold py-0.5 px-2 rounded-sm border border-stone-700 text-[11px]"
             >
-              {TELANGANA_DISTRICTS_EN.map(d => (
-                <option key={d} value={d}>{d}</option>
+              {TELANGANA_DISTRICTS_EN.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
               ))}
             </select>
           </div>
@@ -99,7 +122,6 @@ export default function App() {
       {/* 2. Brand Hero Container: Geometric Balance Professional Header */}
       <header className="bg-crop-600 text-white border-b-4 border-crop-510 py-5 px-4 md:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          
           {/* Logo and Titles */}
           <div className="flex items-center gap-4 text-left">
             <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center text-crop-600 shrink-0">
@@ -108,7 +130,10 @@ export default function App() {
             <div>
               <div className="flex items-baseline gap-2">
                 <h1 className="text-2xl font-display font-black tracking-tight flex items-baseline gap-2">
-                  RYTHU SETHU <span className="font-light text-sm opacity-90">రైతు సేతు</span>
+                  RYTHU SETHU{' '}
+                  <span className="font-light text-sm opacity-90">
+                    రైతు సేతు
+                  </span>
                 </h1>
                 <span className="px-2 py-0.5 rounded bg-white/20 text-white text-[10px] font-mono font-bold uppercase tracking-wider">
                   TG Govt
@@ -122,9 +147,11 @@ export default function App() {
 
           {/* Quick-Action Panel */}
           <div className="flex items-center flex-wrap gap-4 justify-center">
-            
             {/* Lang Swapper in Geometric Theme */}
-            <div className="flex gap-2 bg-crop-700/40 p-1 rounded-lg border border-white/10" id="language-capsules">
+            <div
+              className="flex gap-2 bg-crop-700/40 p-1 rounded-lg border border-white/10"
+              id="language-capsules"
+            >
               <button
                 id="lang-te-btn"
                 onClick={() => handleLanguageChange('te')}
@@ -164,13 +191,18 @@ export default function App() {
             <div className="bg-crop-700/60 border border-white/10 px-4 py-2.5 rounded-lg text-left hidden sm:flex items-center gap-2.5 text-xs text-white font-sans font-medium">
               <PhoneCall className="w-5.5 h-5.5 text-crop-510" />
               <div>
-                <p className="font-bold text-white leading-tight">Farmer Call-Center</p>
-                <a href="tel:18001801551" className="font-mono text-[11px] text-crop-100 hover:underline font-bold">1800-180-1551</a>
+                <p className="font-bold text-white leading-tight">
+                  Farmer Call-Center
+                </p>
+                <a
+                  href="tel:18001801551"
+                  className="font-mono text-[11px] text-crop-100 hover:underline font-bold"
+                >
+                  1800-180-1551
+                </a>
               </div>
             </div>
-
           </div>
-
         </div>
       </header>
 
@@ -197,7 +229,6 @@ export default function App() {
       <nav className="border-b border-earth-100 bg-white sticky top-0 z-40 shadow-xs px-4 md:px-8">
         <div className="max-w-7xl mx-auto flex items-center md:px-6 overflow-x-auto custom-scrollbar no-scrollbar py-2">
           <div className="flex gap-2 w-full justify-between sm:justify-start">
-            
             {/* Tab 1 */}
             <button
               id="tab-chat"
@@ -267,7 +298,6 @@ export default function App() {
               <Calculator className="w-4 h-4 shrink-0" />
               {t.toolsTab}
             </button>
-
           </div>
         </div>
       </nav>
@@ -299,17 +329,18 @@ export default function App() {
                   // Optionally redirect to Chat with recommendations loaded
                   setNews((prev) => [
                     ...prev,
-                    { id: Date.now(), title: "Interactive schemes analysis generated based on land profile.", date: "Just now" }
+                    {
+                      id: Date.now(),
+                      title:
+                        'Interactive schemes analysis generated based on land profile.',
+                      date: 'Just now',
+                    },
                   ]);
                 }}
               />
             )}
 
-            {activeTab === 'map' && (
-              <CenterFinder
-                language={language}
-              />
-            )}
+            {activeTab === 'map' && <CenterFinder language={language} />}
 
             {activeTab === 'rag' && (
               <KnowledgeBase
@@ -320,11 +351,7 @@ export default function App() {
               />
             )}
 
-            {activeTab === 'tools' && (
-              <FarmerTools
-                language={language}
-              />
-            )}
+            {activeTab === 'tools' && <FarmerTools language={language} />}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -333,7 +360,8 @@ export default function App() {
       <footer className="border-t border-earth-150 bg-white py-8 text-center text-xs text-stone-500 font-sans font-medium px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 md:px-8">
           <p>
-            Rythu Sethu — Telangana State Farmers Support & Agricultural Schemes Resource
+            Rythu Sethu — Telangana State Farmers Support & Agricultural Schemes
+            Resource
           </p>
           <div className="flex gap-4 font-mono text-[10px] text-stone-400">
             <span>District Coordinate In-sync</span>
@@ -342,7 +370,6 @@ export default function App() {
           </div>
         </div>
       </footer>
-
     </div>
   );
 }

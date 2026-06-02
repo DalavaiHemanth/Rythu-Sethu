@@ -39,7 +39,12 @@ export interface QuizQuestion {
   textEn: string;
   textTe: string;
   textUr: string;
-  field: 'isResident' | 'isLandowner' | 'isSmallFarmer' | 'hasCropLoan' | 'needsInsurance';
+  field:
+    | 'isResident'
+    | 'isLandowner'
+    | 'isSmallFarmer'
+    | 'hasCropLoan'
+    | 'needsInsurance';
 }
 
 export interface Center {

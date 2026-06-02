@@ -1,8 +1,17 @@
+import {
+  Building2,
+  CheckCircle,
+  Landmark,
+  MapPin,
+  Navigation,
+  Phone,
+  Search,
+  User,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import React, { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Search, MapPin, Phone, User, Landmark, Building2, CheckCircle, Navigation } from 'lucide-react';
 import { CENTERS, TELANGANA_DISTRICTS_EN } from '../data/staticData';
-import { TRANSLATIONS, LanguageKey } from '../data/translations';
+import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { Center } from '../types';
 
 interface CenterFinderProps {
@@ -15,14 +24,22 @@ export default function CenterFinder({ language }: CenterFinderProps) {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeCenter, setActiveCenter] = useState<Center | null>(CENTERS[0]);
-  
+
   // Geolocation states
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
   const [locationError, setLocationError] = useState<string | null>(null);
 
   // Haversine formula to compute distance in km
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ) => {
     const R = 6371; // Earth's radius in km
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -39,11 +56,11 @@ export default function CenterFinder({ language }: CenterFinderProps) {
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
       setLocationError(
-        language === 'te' 
-          ? 'మీ బ్రౌజర్ జియోలొకేషన్‌కు మద్దతు ఇవ్వడం లేదు.' 
+        language === 'te'
+          ? 'మీ బ్రౌజర్ జియోలొకేషన్‌కు మద్దతు ఇవ్వడం లేదు.'
           : language === 'ur'
-          ? 'آپ کا براؤزر جغرافیائی پوزیشن کی حمایت نہیں کرتا ہے۔'
-          : 'Geolocation is not supported by your browser.'
+            ? 'آپ کا براؤزر جغرافیائی پوزیشن کی حمایت نہیں کرتا ہے۔'
+            : 'Geolocation is not supported by your browser.'
       );
       return;
     }
@@ -66,8 +83,8 @@ export default function CenterFinder({ language }: CenterFinderProps) {
           language === 'te'
             ? 'స్థానాన్ని పొందడం సాధ్యం కాలేదు. గమ్యస్థాన ఆథరైజేషన్ అనుమతించబడిందని నిర్ధారించుకోండి.'
             : language === 'ur'
-            ? 'مقام تلاش کرنے میں ناکامی۔ مقام کی اجازت چیک کریں۔'
-            : 'Unable to retrieve your location. Please check GPS permission.'
+              ? 'مقام تلاش کرنے میں ناکامی۔ مقام کی اجازت چیک کریں۔'
+              : 'Unable to retrieve your location. Please check GPS permission.'
         );
       },
       { enableHighAccuracy: true, timeout: 8000 }
@@ -90,12 +107,15 @@ export default function CenterFinder({ language }: CenterFinderProps) {
     });
 
     result = result.filter((c) => {
-      const matchDistrict = selectedDistrict ? c.districtEn === selectedDistrict : true;
+      const matchDistrict = selectedDistrict
+        ? c.districtEn === selectedDistrict
+        : true;
       const matchType = selectedType === 'all' ? true : c.type === selectedType;
-      
-      const textToSearch = `${c.nameEn} ${c.nameTe} ${c.districtEn} ${c.addressEn} ${c.officerEn}`.toLowerCase();
+
+      const textToSearch =
+        `${c.nameEn} ${c.nameTe} ${c.districtEn} ${c.addressEn} ${c.officerEn}`.toLowerCase();
       const matchSearch = textToSearch.includes(searchQuery.toLowerCase());
-      
+
       return matchDistrict && matchType && matchSearch;
     });
 
@@ -114,15 +134,20 @@ export default function CenterFinder({ language }: CenterFinderProps) {
   useEffect(() => {
     if (userLocation && filteredCenters.length > 0) {
       const nearest = filteredCenters[0];
-      if (!activeCenter || !filteredCenters.some(c => c.id === activeCenter.id)) {
+      if (
+        !activeCenter ||
+        !filteredCenters.some((c) => c.id === activeCenter.id)
+      ) {
         setActiveCenter(nearest);
       }
     }
   }, [userLocation, filteredCenters]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-transparent" id="center-finder-root">
-      
+    <div
+      className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-transparent"
+      id="center-finder-root"
+    >
       {/* Search and Filters Hub */}
       <div className="lg:col-span-8 space-y-6">
         <div className="bg-white p-5 rounded-xl shadow-xs border border-earth-100">
@@ -139,18 +164,23 @@ export default function CenterFinder({ language }: CenterFinderProps) {
             <div className="space-y-1 text-left">
               <h3 className="text-xs font-bold text-crop-950 flex items-center gap-1.5 font-sans">
                 <MapPin className="w-4 h-4 text-emerald-600 animate-pulse" />
-                {language === 'te' ? 'జీపీఎస్ ద్వారా సమీప రైతు వేదికను కనుగొనండి' : language === 'ur' ? 'جی پی ایس کے ذریعے قریب ترین مرکز تلاش کریں' : 'Find closest Rythu Vedika via GPS'}
+                {language === 'te'
+                  ? 'జీపీఎస్ ద్వారా సమీప రైతు వేదికను కనుగొనండి'
+                  : language === 'ur'
+                    ? 'جی پی ایس کے ذریعے قریب ترین مرکز تلاش کریں'
+                    : 'Find closest Rythu Vedika via GPS'}
               </h3>
               <p className="text-[10px] text-stone-630 leading-normal font-sans">
-                {language === 'te' 
-                  ? 'మీ మొబైల్ జీపీఎస్ లోకేషన్ ఆధారంగా సమీప కేంద్రాలు స్వయంచాలకంగా కిలోమీటర్ల దూరంతో సహా అమర్చబడతాయి.' 
+                {language === 'te'
+                  ? 'మీ మొబైల్ జీపీఎస్ లోకేషన్ ఆధారంగా సమీప కేంద్రాలు స్వయంచాలకంగా కిలోమీటర్ల దూరంతో సహా అమర్చబడతాయి.'
                   : language === 'ur'
-                  ? 'آپ کے فون کے جی پی ایس مقام کی بنیاد پر قریبی مراکز خود کار طریقے سے دوری کے حساب سے ترتیب دیئے جائیں گے۔'
-                  : 'Allows sorting centers dynamically in ascending order based on physical Kilometers distance to your present coordinates.'}
+                    ? 'آپ کے فون کے جی پی ایس مقام کی بنیاد پر قریبی مراکز خود کار طریقے سے دوری کے حساب سے ترتیب دیئے جائیں گے۔'
+                    : 'Allows sorting centers dynamically in ascending order based on physical Kilometers distance to your present coordinates.'}
               </p>
               {userLocation && (
                 <div className="text-[10px] font-mono text-emerald-800 font-bold bg-white/80 px-2 py-0.5 rounded border border-emerald-250 inline-block mt-1">
-                  📍 Lat: {userLocation.latitude.toFixed(4)}, Lng: {userLocation.longitude.toFixed(4)}
+                  📍 Lat: {userLocation.latitude.toFixed(4)}, Lng:{' '}
+                  {userLocation.longitude.toFixed(4)}
                 </div>
               )}
               {locationError && (
@@ -170,14 +200,26 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                   : 'bg-crop-600 hover:bg-crop-700 text-white border-crop-700'
               }`}
             >
-              <Navigation className={`w-3.5 h-3.5 ${locationLoading ? 'animate-spin' : ''}`} />
-              {locationLoading ? (
-                language === 'te' ? 'గుర్తిస్తోంది...' : language === 'ur' ? 'مقام تلاش ہو رہا ہے...' : 'Locating...'
-              ) : userLocation ? (
-                language === 'te' ? 'స్థానం అప్‌డేట్ చేయండి 🔄' : language === 'ur' ? 'اپ ڈیٹ مقام 🔄' : 'Update Location 🔄'
-              ) : (
-                language === 'te' ? 'నా స్థానాన్ని ఉపయోగించండి' : language === 'ur' ? 'میرا مقام استعمال کریں' : 'Use My Location'
-              )}
+              <Navigation
+                className={`w-3.5 h-3.5 ${locationLoading ? 'animate-spin' : ''}`}
+              />
+              {locationLoading
+                ? language === 'te'
+                  ? 'గుర్తిస్తోంది...'
+                  : language === 'ur'
+                    ? 'مقام تلاش ہو رہا ہے...'
+                    : 'Locating...'
+                : userLocation
+                  ? language === 'te'
+                    ? 'స్థానం అప్‌డేట్ చేయండి 🔄'
+                    : language === 'ur'
+                      ? 'اپ ڈیٹ مقام 🔄'
+                      : 'Update Location 🔄'
+                  : language === 'te'
+                    ? 'నా స్థానాన్ని ఉపయోగించండి'
+                    : language === 'ur'
+                      ? 'میرا مقام استعمال کریں'
+                      : 'Use My Location'}
             </button>
           </div>
 
@@ -203,12 +245,16 @@ export default function CenterFinder({ language }: CenterFinderProps) {
               value={selectedDistrict}
               onChange={(e) => {
                 setSelectedDistrict(e.target.value);
-                const matches = CENTERS.filter(c => !e.target.value || c.districtEn === e.target.value);
+                const matches = CENTERS.filter(
+                  (c) => !e.target.value || c.districtEn === e.target.value
+                );
                 if (matches.length > 0) setActiveCenter(matches[0]);
               }}
               className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 px-3 text-xs font-sans focus:outline-none focus:ring-2 focus:ring-crop-600"
             >
-              <option value="">{t.filterDistrict} ({TELANGANA_DISTRICTS_EN.length})</option>
+              <option value="">
+                {t.filterDistrict} ({TELANGANA_DISTRICTS_EN.length})
+              </option>
               {TELANGANA_DISTRICTS_EN.map((dist) => (
                 <option key={dist} value={dist}>
                   {dist}
@@ -234,11 +280,21 @@ export default function CenterFinder({ language }: CenterFinderProps) {
         <div className="space-y-3">
           <div className="flex justify-between items-center px-1">
             <span className="text-[11px] font-mono font-medium text-stone-550 uppercase tracking-wider">
-              Matches Found: {filteredCenters.length} Centers {userLocation && '• Sorted by Shortest GPS Distance'}
+              Matches Found: {filteredCenters.length} Centers{' '}
+              {userLocation && '• Sorted by Shortest GPS Distance'}
             </span>
-            {(selectedDistrict || searchQuery || selectedType !== 'all' || userLocation) && (
+            {(selectedDistrict ||
+              searchQuery ||
+              selectedType !== 'all' ||
+              userLocation) && (
               <button
-                onClick={() => { setSelectedDistrict(''); setSelectedType('all'); setSearchQuery(''); setUserLocation(null); setLocationError(null); }}
+                onClick={() => {
+                  setSelectedDistrict('');
+                  setSelectedType('all');
+                  setSearchQuery('');
+                  setUserLocation(null);
+                  setLocationError(null);
+                }}
                 className="text-[11px] font-sans text-crop-600 hover:underline font-medium cursor-pointer"
               >
                 Clear Filters & GPS
@@ -257,7 +313,10 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.25, delay: Math.min(index * 0.05, 0.3) }}
+                    transition={{
+                      duration: 0.25,
+                      delay: Math.min(index * 0.05, 0.3),
+                    }}
                     id={`center-${center.id}`}
                     onClick={() => setActiveCenter(center)}
                     className={`p-4 rounded-xl border text-left cursor-pointer transition-all duration-200 ${
@@ -277,25 +336,38 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                       </div>
 
                       {/* Display computed distance if GPS is available */}
-                      {center.distanceKm !== undefined && center.distanceKm !== null && (
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-100/90 text-emerald-950 text-[10px] font-mono font-black border border-emerald-300 animate-pulse shrink-0">
-                          📍 {center.distanceKm.toFixed(1)} km
-                        </span>
-                      )}
+                      {center.distanceKm !== undefined &&
+                        center.distanceKm !== null && (
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-100/90 text-emerald-950 text-[10px] font-mono font-black border border-emerald-300 animate-pulse shrink-0">
+                            📍 {center.distanceKm.toFixed(1)} km
+                          </span>
+                        )}
 
                       <span className="text-[11px] font-sans font-semibold text-crop-800">
-                        {language === 'te' ? center.districtTe : language === 'ur' ? center.districtUr : center.districtEn}
+                        {language === 'te'
+                          ? center.districtTe
+                          : language === 'ur'
+                            ? center.districtUr
+                            : center.districtEn}
                       </span>
                     </div>
 
                     <h3 className="text-sm font-display font-medium text-stone-850 leading-tight mb-2 line-clamp-1">
-                      {language === 'te' ? center.nameTe : language === 'ur' ? center.nameUr : center.nameEn}
+                      {language === 'te'
+                        ? center.nameTe
+                        : language === 'ur'
+                          ? center.nameUr
+                          : center.nameEn}
                     </h3>
 
                     <div className="flex items-center gap-1.5 text-xs text-stone-400 mb-2">
                       <MapPin className="w-3.5 h-3.5 shrink-0 text-stone-400" />
                       <span className="truncate text-[11px] text-stone-550">
-                        {language === 'te' ? center.addressTe : language === 'ur' ? center.addressUr : center.addressEn}
+                        {language === 'te'
+                          ? center.addressTe
+                          : language === 'ur'
+                            ? center.addressUr
+                            : center.addressEn}
                       </span>
                     </div>
 
@@ -303,11 +375,16 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                       <div className="flex items-center gap-1">
                         <User className="w-3.5 h-3.5 text-stone-400" />
                         <span className="text-[11px] text-stone-600 truncate max-w-[125px]">
-                          {language === 'te' ? center.officerTe : language === 'ur' ? center.officerUr : center.officerEn}
+                          {language === 'te'
+                            ? center.officerTe
+                            : language === 'ur'
+                              ? center.officerUr
+                              : center.officerEn}
                         </span>
                       </div>
                       <span className="text-[10px] text-crop-700 font-mono flex items-center gap-0.5">
-                        <Phone className="w-3 h-3 text-crop-600" /> Contacts &gt;
+                        <Phone className="w-3 h-3 text-crop-600" /> Contacts
+                        &gt;
                       </span>
                     </div>
                   </motion.div>
@@ -316,8 +393,12 @@ export default function CenterFinder({ language }: CenterFinderProps) {
 
               {filteredCenters.length === 0 && (
                 <div className="col-span-full py-12 text-center bg-white border border-earth-100 rounded-xl p-6">
-                  <span className="inline-block text-stone-400 text-4xl mb-2">🌾</span>
-                  <p className="text-xs font-sans text-stone-550 font-medium">{t.notEligible}</p>
+                  <span className="inline-block text-stone-400 text-4xl mb-2">
+                    🌾
+                  </span>
+                  <p className="text-xs font-sans text-stone-550 font-medium">
+                    {t.notEligible}
+                  </p>
                 </div>
               )}
             </AnimatePresence>
@@ -330,7 +411,7 @@ export default function CenterFinder({ language }: CenterFinderProps) {
         <div className="bg-crop-900 text-white rounded-xl p-6 shadow-md border border-crop-950 relative overflow-hidden h-full flex flex-col justify-between min-h-[480px]">
           {/* Subtle asset patterns */}
           <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-crop-700/10 rounded-full blur-2xl pointer-events-none" />
-          
+
           <div className="relative z-10 space-y-5">
             <span className="text-[10px] font-mono tracking-widest text-crop-200 uppercase bg-crop-950/45 px-3 py-1 rounded-full border border-crop-700/35 inline-block">
               🗺️ Interactive Coordinator
@@ -343,7 +424,11 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                     {activeCenter.type} STATION
                   </h3>
                   <h2 className="text-xl font-display font-medium text-white tracking-tight leading-snug">
-                    {language === 'te' ? activeCenter.nameTe : language === 'ur' ? activeCenter.nameUr : activeCenter.nameEn}
+                    {language === 'te'
+                      ? activeCenter.nameTe
+                      : language === 'ur'
+                        ? activeCenter.nameUr
+                        : activeCenter.nameEn}
                   </h2>
                 </div>
 
@@ -353,7 +438,11 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                     <div>
                       <p className="font-semibold text-white/90">{t.address}</p>
                       <p className="text-stone-300 text-[11px] leading-relaxed mt-0.5">
-                        {language === 'te' ? activeCenter.addressTe : language === 'ur' ? activeCenter.addressUr : activeCenter.addressEn}
+                        {language === 'te'
+                          ? activeCenter.addressTe
+                          : language === 'ur'
+                            ? activeCenter.addressUr
+                            : activeCenter.addressEn}
                       </p>
                     </div>
                   </div>
@@ -365,9 +454,15 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                       <User className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-mono text-crop-200 uppercase tracking-wide">{t.officer}</p>
+                      <p className="text-[10px] font-mono text-crop-200 uppercase tracking-wide">
+                        {t.officer}
+                      </p>
                       <p className="text-sm font-sans text-white">
-                        {language === 'te' ? activeCenter.officerTe : language === 'ur' ? activeCenter.officerUr : activeCenter.officerEn}
+                        {language === 'te'
+                          ? activeCenter.officerTe
+                          : language === 'ur'
+                            ? activeCenter.officerUr
+                            : activeCenter.officerEn}
                       </p>
                     </div>
                   </div>
@@ -377,7 +472,9 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                       <Phone className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-mono text-crop-200 uppercase tracking-wide">Helpline</p>
+                      <p className="text-[10px] font-mono text-crop-200 uppercase tracking-wide">
+                        Helpline
+                      </p>
                       <p className="text-sm font-mono text-white">
                         {activeCenter.contact}
                       </p>
@@ -421,7 +518,6 @@ export default function CenterFinder({ language }: CenterFinderProps) {
           )}
         </div>
       </div>
-
     </div>
   );
 }

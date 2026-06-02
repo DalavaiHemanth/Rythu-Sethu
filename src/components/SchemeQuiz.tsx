@@ -1,8 +1,20 @@
+import {
+  Award,
+  Bookmark,
+  CheckCircle2,
+  ChevronRight,
+  HelpCircle,
+  HelpCircle as HelpIcon,
+  RefreshCw,
+  Settings,
+  SlidersHorizontal,
+  Sparkles,
+  XCircle,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { HelpCircle, CheckCircle2, ChevronRight, RefreshCw, Bookmark, Award, HelpCircle as HelpIcon, XCircle, SlidersHorizontal, Settings, Sparkles } from 'lucide-react';
 import { SCHEMES } from '../data/staticData';
-import { TRANSLATIONS, LanguageKey } from '../data/translations';
+import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { Scheme } from '../types';
 
 interface SchemeQuizProps {
@@ -10,7 +22,10 @@ interface SchemeQuizProps {
   onQuizCompleted: (answers: Record<string, boolean>) => void;
 }
 
-export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProps) {
+export default function SchemeQuiz({
+  language,
+  onQuizCompleted,
+}: SchemeQuizProps) {
   const t = TRANSLATIONS[language];
   const [quizMode, setQuizMode] = useState<'form' | 'steps'>('form'); // Default to Direct Form Mode!
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -94,7 +109,10 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
       setCurrentStep(currentStep + 1);
     } else {
       setIsDone(true);
-      localStorage.setItem('rythu_sethu_quiz_answers', JSON.stringify(updatedAnswers));
+      localStorage.setItem(
+        'rythu_sethu_quiz_answers',
+        JSON.stringify(updatedAnswers)
+      );
       localStorage.setItem('rythu_sethu_quiz_completed', 'true');
       onQuizCompleted(updatedAnswers);
     }
@@ -128,7 +146,8 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
     if (scheme.criteria.residentOnly && !answers.isResident) return false;
     if (scheme.criteria.landownerOnly && !answers.isLandowner) return false;
     if (scheme.criteria.smallFarmerOnly && !answers.isSmallFarmer) return false;
-    if (scheme.criteria.cropLoanOutstanding && !answers.hasCropLoan) return false;
+    if (scheme.criteria.cropLoanOutstanding && !answers.hasCropLoan)
+      return false;
     return true;
   });
 
@@ -151,7 +170,11 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                   Telangana State Welfare Analyzer
                 </span>
                 <span className="text-xs text-stone-500 font-medium">
-                  {language === 'te' ? 'అర్హత గుర్తింపు విధానాన్ని ఎంచుకోండి' : language === 'ur' ? 'طریقہ منتخب کریں' : 'Choose input style'}
+                  {language === 'te'
+                    ? 'అర్హత గుర్తింపు విధానాన్ని ఎంచుకోండి'
+                    : language === 'ur'
+                      ? 'طریقہ منتخب کریں'
+                      : 'Choose input style'}
                 </span>
               </div>
 
@@ -165,7 +188,11 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                   }`}
                 >
                   <SlidersHorizontal className="w-3.5 h-3.5" />
-                  {language === 'te' ? 'ఒకటే పేజీ ఫారం' : language === 'ur' ? 'ایک صفحہ فارم' : 'One-Page Form'}
+                  {language === 'te'
+                    ? 'ఒకటే పేజీ ఫారం'
+                    : language === 'ur'
+                      ? 'ایک صفحہ فارم'
+                      : 'One-Page Form'}
                 </button>
                 <button
                   onClick={() => {
@@ -179,7 +206,11 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  {language === 'te' ? 'స్టెప్-బై-స్టెప్ క్విజ్' : language === 'ur' ? 'سوالنامہ' : 'Guided Steps'}
+                  {language === 'te'
+                    ? 'స్టెప్-బై-స్టెప్ క్విజ్'
+                    : language === 'ur'
+                      ? 'سوالنامہ'
+                      : 'Guided Steps'}
                 </button>
               </div>
             </div>
@@ -189,12 +220,19 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
               <div className="space-y-6">
                 <div className="text-left bg-crop-50/20 border border-crop-100 rounded-lg p-3.5">
                   <p className="text-xs text-crop-900 font-medium leading-relaxed">
-                    💡 <strong>{language === 'te' ? 'సూచన:' : language === 'ur' ? 'رہنمائی' : 'At-Once Form:'}</strong>{' '}
+                    💡{' '}
+                    <strong>
+                      {language === 'te'
+                        ? 'సూచన:'
+                        : language === 'ur'
+                          ? 'رہنمائی'
+                          : 'At-Once Form:'}
+                    </strong>{' '}
                     {language === 'te'
                       ? 'కింది నిబంధనలను ఒకేసారి సెట్ చేసి అర్హతను వెంటనే విశ్లేషించండి. మీ సమాధానాలు బ్రౌజర్ మెమరీలో భద్రపరచబడతాయి.'
                       : language === 'ur'
-                      ? 'ایک ہی بار اہلیت چیک کریں اور محفوظ کریں۔ یہ ڈیٹا محفوظ رہتا ہے۔'
-                      : 'Adjust these attributes on a single layout and check eligibility with one click. Your answers persist dynamically.'}
+                        ? 'ایک ہی بار اہلیت چیک کریں اور محفوظ کریں۔ یہ ڈیٹا محفوظ رہتا ہے۔'
+                        : 'Adjust these attributes on a single layout and check eligibility with one click. Your answers persist dynamically.'}
                   </p>
                 </div>
 
@@ -211,13 +249,18 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                         }`}
                       >
                         <div className="flex-1 pr-4">
-                          <p className={`font-sans font-semibold text-stone-800 ${language === 'te' ? 'text-base font-medium' : 'text-xs md:text-sm'}`}>
+                          <p
+                            className={`font-sans font-semibold text-stone-800 ${language === 'te' ? 'text-base font-medium' : 'text-xs md:text-sm'}`}
+                          >
                             {q.text}
                           </p>
                         </div>
                         <button
                           onClick={() => {
-                            setAnswers((prev) => ({ ...prev, [q.id]: !isChecked }));
+                            setAnswers((prev) => ({
+                              ...prev,
+                              [q.id]: !isChecked,
+                            }));
                           }}
                           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                             isChecked ? 'bg-crop-600' : 'bg-stone-300'
@@ -239,7 +282,11 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                   className="w-full bg-crop-600 hover:bg-crop-700 active:bg-crop-800 text-white font-sans font-bold py-4 px-6 rounded-lg text-sm transition-all shadow-sm border-b-2 border-crop-800 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <CheckCircle2 className="w-5 h-5" />
-                  {language === 'te' ? 'అర్హతను విశ్లేషించండి & వివరాలను సేవ్ చేయండి' : language === 'ur' ? 'اہلیت کا تجزیہ کریں اور محفوظ کریں' : 'Save Attributes & Check Eligibility'}
+                  {language === 'te'
+                    ? 'అర్హతను విశ్లేషించండి & వివరాలను సేవ్ చేయండి'
+                    : language === 'ur'
+                      ? 'اہلیت کا تجزیہ کریں اور محفوظ کریں'
+                      : 'Save Attributes & Check Eligibility'}
                 </button>
               </div>
             ) : (
@@ -249,20 +296,28 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-stone-100">
                   <div
                     className="h-full bg-crop-600 transition-all duration-300"
-                    style={{ width: `${((currentStep + 1) / questions.length) * 105}%` }}
+                    style={{
+                      width: `${((currentStep + 1) / questions.length) * 105}%`,
+                    }}
                   />
                 </div>
 
                 <div className="flex justify-between items-center text-xs font-mono font-bold text-stone-500 uppercase tracking-widest pl-1 mb-2">
-                  <span className="text-crop-600">Telangana Agri Guided Steps</span>
-                  <span>Question {currentStep + 1} of {questions.length}</span>
+                  <span className="text-crop-600">
+                    Telangana Agri Guided Steps
+                  </span>
+                  <span>
+                    Question {currentStep + 1} of {questions.length}
+                  </span>
                 </div>
 
                 <div className="w-12 h-12 rounded-lg bg-crop-50 flex items-center justify-center mx-auto mb-4 text-crop-600 border border-crop-200">
                   <HelpIcon className="w-6 h-6" />
                 </div>
 
-                <h2 className={`text-xl md:text-2xl font-display font-medium text-stone-800 leading-snug tracking-tight mb-8 px-4 h-20 flex items-center justify-center ${language === 'te' ? 'text-2xl' : ''}`}>
+                <h2
+                  className={`text-xl md:text-2xl font-display font-medium text-stone-800 leading-snug tracking-tight mb-8 px-4 h-20 flex items-center justify-center ${language === 'te' ? 'text-2xl' : ''}`}
+                >
                   {questions[currentStep].text}
                 </h2>
 
@@ -316,16 +371,29 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
             <div className="bg-stone-100 border border-stone-200 rounded-lg p-4 flex flex-wrap gap-4 items-center justify-between text-xs text-stone-700">
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="font-bold text-[10px] bg-stone-200 px-2 py-0.5 rounded text-stone-600 tracking-wider font-mono uppercase">
-                  {language === 'te' ? 'మీ ప్రొఫైల్' : language === 'ur' ? 'آپ کا پروفائل' : 'Saved Profile'}
+                  {language === 'te'
+                    ? 'మీ ప్రొఫైల్'
+                    : language === 'ur'
+                      ? 'آپ کا پروفائل'
+                      : 'Saved Profile'}
                 </span>
-                <span className={`px-2 py-0.5 rounded ${answers.isResident ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
-                  {language === 'te' ? 'తెలంగాణ వాసి: ' : 'Resident: '} {answers.isResident ? t.yes : t.no}
+                <span
+                  className={`px-2 py-0.5 rounded ${answers.isResident ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}
+                >
+                  {language === 'te' ? 'తెలంగాణ వాసి: ' : 'Resident: '}{' '}
+                  {answers.isResident ? t.yes : t.no}
                 </span>
-                <span className={`px-2 py-0.5 rounded ${answers.isLandowner ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
-                  {language === 'te' ? 'భూయజమాని: ' : 'Landowner: '} {answers.isLandowner ? t.yes : t.no}
+                <span
+                  className={`px-2 py-0.5 rounded ${answers.isLandowner ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}
+                >
+                  {language === 'te' ? 'భూయజమాని: ' : 'Landowner: '}{' '}
+                  {answers.isLandowner ? t.yes : t.no}
                 </span>
-                <span className={`px-2 py-0.5 rounded ${answers.isSmallFarmer ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
-                  {language === 'te' ? 'చిన్న రైతు: ' : 'Small Farmer: '} {answers.isSmallFarmer ? t.yes : t.no}
+                <span
+                  className={`px-2 py-0.5 rounded ${answers.isSmallFarmer ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}
+                >
+                  {language === 'te' ? 'చిన్న రైతు: ' : 'Small Farmer: '}{' '}
+                  {answers.isSmallFarmer ? t.yes : t.no}
                 </span>
               </div>
 
@@ -336,7 +404,12 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                 }}
                 className="text-crop-800 hover:text-crop-900 font-extrabold hover:underline cursor-pointer flex items-center gap-1.5"
               >
-                ⚙️ {language === 'te' ? 'ప్రొఫైల్ మార్చు' : language === 'ur' ? 'پروفائل تبدیل کریں' : 'Change Profile Values'}
+                ⚙️{' '}
+                {language === 'te'
+                  ? 'ప్రొఫైల్ మార్చు'
+                  : language === 'ur'
+                    ? 'پروفائل تبدیل کریں'
+                    : 'Change Profile Values'}
               </button>
             </div>
 
@@ -358,10 +431,18 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                     <div className="space-y-3 flex-1 text-left">
                       <div>
                         <h3 className="text-base font-display font-medium text-crop-900 tracking-tight">
-                          {language === 'te' ? scheme.nameTe : language === 'ur' ? scheme.nameUr : scheme.nameEn}
+                          {language === 'te'
+                            ? scheme.nameTe
+                            : language === 'ur'
+                              ? scheme.nameUr
+                              : scheme.nameEn}
                         </h3>
                         <p className="text-xs text-stone-600 mt-1 leading-relaxed">
-                          {language === 'te' ? scheme.descTe : language === 'ur' ? scheme.descUr : scheme.descEn}
+                          {language === 'te'
+                            ? scheme.descTe
+                            : language === 'ur'
+                              ? scheme.descUr
+                              : scheme.descEn}
                         </p>
                       </div>
 
@@ -372,7 +453,11 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                             🟢 {t.benefits}
                           </p>
                           <p className="leading-relaxed text-stone-650">
-                            {language === 'te' ? scheme.benefitsTe : language === 'ur' ? scheme.benefitsUr : scheme.benefitsEn}
+                            {language === 'te'
+                              ? scheme.benefitsTe
+                              : language === 'ur'
+                                ? scheme.benefitsUr
+                                : scheme.benefitsEn}
                           </p>
                         </div>
 
@@ -382,7 +467,11 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                             🌾 {t.applyNow}
                           </p>
                           <p className="leading-relaxed text-stone-650">
-                            {language === 'te' ? scheme.howToApplyTe : language === 'ur' ? scheme.howToApplyUr : scheme.howToApplyEn}
+                            {language === 'te'
+                              ? scheme.howToApplyTe
+                              : language === 'ur'
+                                ? scheme.howToApplyUr
+                                : scheme.howToApplyEn}
                           </p>
                         </div>
                       </div>
@@ -405,7 +494,11 @@ export default function SchemeQuiz({ language, onQuizCompleted }: SchemeQuizProp
                 className="flex items-center gap-2 bg-stone-150 hover:bg-stone-200 text-stone-800 font-sans font-bold py-3 px-5 rounded-lg text-xs transition-all tracking-wider shadow-sm cursor-pointer border border-stone-250"
               >
                 <RefreshCw className="w-4 h-4" />
-                {language === 'te' ? 'పూర్తిగా రీసెట్ చేయండి' : language === 'ur' ? 'دوبارہ شروع کریں' : 'Reset & Erasure'}
+                {language === 'te'
+                  ? 'పూర్తిగా రీసెట్ చేయండి'
+                  : language === 'ur'
+                    ? 'دوبارہ شروع کریں'
+                    : 'Reset & Erasure'}
               </button>
             </div>
           </motion.div>

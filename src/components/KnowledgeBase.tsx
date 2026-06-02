@@ -1,7 +1,19 @@
+import {
+  AlertCircle,
+  BookOpen,
+  Calendar,
+  CheckCircle,
+  ChevronRight,
+  Database,
+  FilePlus,
+  FileText,
+  Plus,
+  RefreshCcw,
+  Trash2,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { FileText, Plus, Trash2, Calendar, Database, CheckCircle, RefreshCcw, BookOpen, AlertCircle, FilePlus, ChevronRight } from 'lucide-react';
-import { TRANSLATIONS, LanguageKey } from '../data/translations';
+import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { UploadedDoc } from '../types';
 
 interface KnowledgeBaseProps {
@@ -9,7 +21,10 @@ interface KnowledgeBaseProps {
   onDocumentAdded: () => void;
 }
 
-export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBaseProps) {
+export default function KnowledgeBase({
+  language,
+  onDocumentAdded,
+}: KnowledgeBaseProps) {
   const t = TRANSLATIONS[language];
   const [documents, setDocuments] = useState<UploadedDoc[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -83,7 +98,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
       setContent('');
       setSelectedDoc(null);
       setUploadSuccess(true);
-      
+
       // Refresh documents
       await fetchDocuments();
       onDocumentAdded();
@@ -105,7 +120,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
     reader.onload = (event) => {
       const text = event.target?.result as string;
       if (text) {
-        setTitle(file.name.replace(/\.[^/.]+$/, "")); // Strip extension
+        setTitle(file.name.replace(/\.[^/.]+$/, '')); // Strip extension
         setContent(text);
       }
     };
@@ -130,8 +145,10 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-transparent" id="kb-root">
-      
+    <div
+      className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-transparent"
+      id="kb-root"
+    >
       {/* Upload and Input Form */}
       <div className="lg:col-span-7">
         <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-earth-100 space-y-6">
@@ -139,10 +156,12 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
             <div className="space-y-1 text-left flex-1 min-w-[200px]">
               <h2 className="text-lg md:text-xl font-display font-bold text-crop-900 tracking-tight flex items-center gap-2">
                 <FilePlus className="w-5.5 h-5.5 text-crop-600 shrink-0" />
-                {selectedDoc ? "✏️ Loaded Circular Editor" : t.ragHeader}
+                {selectedDoc ? '✏️ Loaded Circular Editor' : t.ragHeader}
               </h2>
               <p className="text-xs text-stone-500 leading-relaxed">
-                {selectedDoc ? "You are viewing/modifying an active G.O. policy. Click 'Reset Form' to start a new document write." : t.ragDesc}
+                {selectedDoc
+                  ? "You are viewing/modifying an active G.O. policy. Click 'Reset Form' to start a new document write."
+                  : t.ragDesc}
               </p>
             </div>
             {selectedDoc && (
@@ -159,7 +178,10 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
           <form onSubmit={handleSubmit} className="space-y-4 text-left">
             {/* Title */}
             <div className="space-y-1.5">
-              <label htmlFor="doc-title-in" className="text-[11px] font-mono font-bold text-stone-600 uppercase tracking-wider pl-1">
+              <label
+                htmlFor="doc-title-in"
+                className="text-[11px] font-mono font-bold text-stone-600 uppercase tracking-wider pl-1"
+              >
                 {t.docTitle}
               </label>
               <input
@@ -194,7 +216,10 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
 
             {/* Content Textarea */}
             <div className="space-y-1.5">
-              <label htmlFor="doc-content-in" className="text-[11px] font-mono font-bold text-stone-600 uppercase tracking-wider pl-1">
+              <label
+                htmlFor="doc-content-in"
+                className="text-[11px] font-mono font-bold text-stone-600 uppercase tracking-wider pl-1"
+              >
                 {t.docContent}
               </label>
               <textarea
@@ -264,7 +289,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
             <h3 className="text-xs font-mono font-medium tracking-widest text-crop-200 uppercase bg-crop-950/40 px-3 py-1 rounded-full border border-crop-700/20 inline-block">
               📂 Policy Knowledge Cache (RAG)
             </h3>
-            
+
             <h2 className="text-lg font-display font-medium text-white pl-1 text-left">
               {t.currentDocs}
             </h2>
@@ -302,7 +327,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-2.5 text-[9px] font-mono text-stone-300">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-stone-400" />
@@ -334,14 +359,18 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
           </div>
 
           <div className="bg-crop-950/40 p-4 rounded-lg border border-white/5 text-left space-y-1">
-            <p className="text-[10px] font-mono text-crop-200 uppercase tracking-wider">💡 RAG Intelligence Feature</p>
+            <p className="text-[10px] font-mono text-crop-200 uppercase tracking-wider">
+              💡 RAG Intelligence Feature
+            </p>
             <p className="text-[11px] text-stone-200 leading-relaxed font-sans">
-              Rythu Sethu bypasses rigid text matching. Uploading any G.O. details above automatically appends it into the Gemini Chat context. Any farmer can then query it using the Chat tab instantly.
+              Rythu Sethu bypasses rigid text matching. Uploading any G.O.
+              details above automatically appends it into the Gemini Chat
+              context. Any farmer can then query it using the Chat tab
+              instantly.
             </p>
           </div>
         </div>
       </div>
-
     </div>
   );
 }

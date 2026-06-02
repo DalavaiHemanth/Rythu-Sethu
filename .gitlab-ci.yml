@@ -1,7 +1,11 @@
 image: node:20-alpine
 
 stages:
+  - test
   - lint
+  - format
+  - type_check
+  - coverage
   - build
   - deploy
 
@@ -13,17 +17,81 @@ cache:
   paths:
     - node_modules/
 
-# ── Stage 1: Lint ─────────────────────────────────────────────────────────────
-lint:
-  stage: lint
+# ── Stage 1: Test ─────────────────────────────────────────────────────────────
+test:
+  stage: test
   script:
     - npm ci
-    - npm run lint
+    - npm run test
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH
 
-# ── Stage 2: Build ────────────────────────────────────────────────────────────
+dependency_audit:
+  stage: test
+  script:
+    - npm audit --audit-level=high || true
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+secret_scanning:
+  stage: test
+  image: 
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  script:
+    - gitleaks detect --source=$CI_PROJECT_DIR --verbose --redact || true
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 2: Lint ─────────────────────────────────────────────────────────────
+lint:
+  stage: lint
+  script:
+    - npm ci
+    - npm run lint:biome
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 3: Format ───────────────────────────────────────────────────────────
+format:
+  stage: format
+  script:
+    - npm ci
+    - npm run format:check
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 4: Type Check ───────────────────────────────────────────────────────
+type_check:
+  stage: type_check
+  script:
+    - npm ci
+    - npm run lint
+    - npm run knip
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 5: Coverage ─────────────────────────────────────────────────────────
+coverage:
+  stage: coverage
+  script:
+    - npm ci
+    - npm run coverage
+  coverage: '/All files\s*\|\s*([\d\.]+)/'
+  artifacts:
+    name: "coverage-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - coverage/
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ── Stage 6: Build ────────────────────────────────────────────────────────────
 build:
   stage: build
   script:
@@ -37,16 +105,7 @@ build:
   rules:
     - if: $CI_COMMIT_BRANCH
 
-# ── Stage 3: Deploy to GitLab Pages ──────────────────────────────────────────
-#
-# GitLab Pages requires artifacts to be published into a folder called "public/".
-# The built React/Vite app lives in dist/ — we copy it over here.
-#
-# ⚠️  The Express backend (/api/chat) is NOT hosted by GitLab Pages (static only).
-#     To enable the AI Chatbot feature you must also deploy the Express server
-#     separately (e.g. Render, Railway, Fly.io) and set the VITE_API_URL
-#     variable in GitLab CI/CD → Settings → Variables.
-#
+# ── Stage 7: Deploy ───────────────────────────────────────────────────────────
 pages:
   stage: deploy
   script:
@@ -56,9 +115,3 @@ pages:
       - public
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-# ── (Optional) Backend deployment hint ───────────────────────────────────────
-# To deploy the Express backend, add a job that builds dist/server.cjs
-# and deploys it to your chosen cloud provider.
-# Required CI/CD Variables (Settings → CI/CD → Variables):
-#   GEMINI_API_KEY  — your Google Gemini API key (mark as "Masked")
