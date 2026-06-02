@@ -162,8 +162,7 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
       stopBtn: 'ఆపండి 🔇',
       resetBtn: 'రీసెట్ చేయండి 🔄',
       fymComp: 'సేంద్రీయ గుళికలు లేదా పశువుల పెంట అవసరము.',
-      dropText:
-        'భూసార పరీక్ష పత్రం ఫోటోను ఇక్కడ వేయండి లేదా క్లిక్ చేసి సెలెక్ట్ చేయండి',
+      dropText: 'భూసార పరీక్ష పత్రం ఫోటోను ఇక్కడ వేయండి లేదా క్లిక్ చేసి సెలెక్ట్ చేయండి',
       orText: 'JPG, PNG చిత్రాలకు మాత్రమే మద్దతు ఉంది (గరిష్టంగా 10MB)',
       cardSelected: 'ఎంచుకున్న చిత్రం:',
       removeBtn: 'చిత్రం తొలగించు',
@@ -564,8 +563,7 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
                       },
                       {
                         id: 'cotton',
-                        label:
-                          language === 'te' ? 'ప్రత్తి (Cotton)' : 'Cotton',
+                        label: language === 'te' ? 'ప్రత్తి (Cotton)' : 'Cotton',
                       },
                       {
                         id: 'chilli',
@@ -573,8 +571,7 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
                       },
                       {
                         id: 'maize',
-                        label:
-                          language === 'te' ? 'మొక్కజొన్న (Maize)' : 'Maize',
+                        label: language === 'te' ? 'మొక్కజొన్న (Maize)' : 'Maize',
                       },
                     ].map((item) => (
                       <button

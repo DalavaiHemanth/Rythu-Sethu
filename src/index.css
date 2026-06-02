@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap');
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-telugu: 'Noto Sans Telugu', 'Inter', sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-telugu: "Noto Sans Telugu", "Inter", sans-serif;
 
   /* Geometric Balance Warm & Earth tones */
   --color-earth-50: #f7faf6;
@@ -35,11 +35,11 @@ body {
 
 /* Better Telugu and standard readability classes */
 .font-telugu {
-  font-family: 'Noto Sans Telugu', var(--font-sans), sans-serif !important;
+  font-family: "Noto Sans Telugu", var(--font-sans), sans-serif !important;
 }
 
 .telugu-chat-bubble {
-  font-family: 'Noto Sans Telugu', var(--font-sans), sans-serif !important;
+  font-family: "Noto Sans Telugu", var(--font-sans), sans-serif !important;
   line-height: 1.85 !important;
   letter-spacing: 0.015em !important;
 }

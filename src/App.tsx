@@ -131,9 +131,7 @@ export default function App() {
               <div className="flex items-baseline gap-2">
                 <h1 className="text-2xl font-display font-black tracking-tight flex items-baseline gap-2">
                   RYTHU SETHU{' '}
-                  <span className="font-light text-sm opacity-90">
-                    రైతు సేతు
-                  </span>
+                  <span className="font-light text-sm opacity-90">రైతు సేతు</span>
                 </h1>
                 <span className="px-2 py-0.5 rounded bg-white/20 text-white text-[10px] font-mono font-bold uppercase tracking-wider">
                   TG Govt
