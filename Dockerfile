@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm ci
+RUN if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; fi
 
 # Copy full application code
 COPY . .
@@ -23,7 +23,7 @@ ENV PORT=3000
 
 COPY package*.json ./
 # Only install production dependencies for minimum attack vector & size
-RUN npm ci --only=production
+RUN if [ -f package-lock.json ]; then npm ci --only=production; else npm install --only=production --no-audit --no-fund; fi
 
 # Copy compiled source artifacts from builders stage
 COPY --from=builder /app/dist ./dist
