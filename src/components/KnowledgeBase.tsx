@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { FileText, Plus, Trash2, Calendar, Database, CheckCircle, RefreshCcw, BookOpen, AlertCircle, FilePlus, ChevronRight } from 'lucide-react';
 import { TRANSLATIONS, LanguageKey } from '../data/translations';
 import { UploadedDoc } from '../types';
+import { getDocuments, uploadDocument, deleteDocument } from '../utils/geminiClient';
 
 interface KnowledgeBaseProps {
   language: LanguageKey;
@@ -41,11 +42,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/documents');
-      if (!response.ok) {
-        throw new Error('Failed to retrieve policy G.O. circulars database');
-      }
-      const data = await response.json();
+      const data = await getDocuments();
       setDocuments(data);
     } catch (err: any) {
       console.error(err);
@@ -69,15 +66,7 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
     setError(null);
 
     try {
-      const response = await fetch('/api/documents/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedDoc?.id, title, content }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to load document into context memory.');
-      }
+      await uploadDocument(title, content, selectedDoc?.id);
 
       setTitle('');
       setContent('');
@@ -116,10 +105,8 @@ export default function KnowledgeBase({ language, onDocumentAdded }: KnowledgeBa
   const handleDelete = async (id: string) => {
     setError(null);
     try {
-      const response = await fetch(`/api/documents/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
+      const success = await deleteDocument(id);
+      if (!success) {
         throw new Error('Could not delete circular.');
       }
       fetchDocuments();
