@@ -84,7 +84,7 @@ deploy-to-cloud-run:
     GCP_ID_TOKEN:
       aud: "https://iam.googleapis.com/projects/$GCP_PROJECT_NUMBER/locations/global/workloadIdentityPools/$GCP_POOL_ID/providers/$GCP_PROVIDER_ID"
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && ($GCP_SERVICE_KEY != "" && $GCP_SERVICE_KEY != null || $GCP_POOL_ID != "" && $GCP_POOL_ID != null)'
   before_script:
     # Install docker CLI to pull/push registry images
     - apk add --no-cache docker-cli
