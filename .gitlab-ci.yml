@@ -17,11 +17,16 @@ cache:
   paths:
     - node_modules/
 
+# Install deps before every job that needs node_modules
+.node_install: &node_install
+  before_script:
+    - npm install --prefer-offline
+
 # ── Stage 1: Test ─────────────────────────────────────────────────────────────
 test:
   stage: test
+  <<: *node_install
   script:
-    - npm ci
     - npm run test
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -29,6 +34,7 @@ test:
 
 dependency_audit:
   stage: test
+  <<: *node_install
   script:
     - npm audit --audit-level=high || true
   rules:
@@ -36,7 +42,7 @@ dependency_audit:
 
 secret_scanning:
   stage: test
-  image: 
+  image:
     name: zricethezav/gitleaks:latest
     entrypoint: [""]
   script:
@@ -47,8 +53,8 @@ secret_scanning:
 # ── Stage 2: Lint ─────────────────────────────────────────────────────────────
 lint:
   stage: lint
+  <<: *node_install
   script:
-    - npm ci
     - npm run lint:biome
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -57,8 +63,8 @@ lint:
 # ── Stage 3: Format ───────────────────────────────────────────────────────────
 format:
   stage: format
+  <<: *node_install
   script:
-    - npm ci
     - npm run format:check
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -67,8 +73,8 @@ format:
 # ── Stage 4: Type Check ───────────────────────────────────────────────────────
 type_check:
   stage: type_check
+  <<: *node_install
   script:
-    - npm ci
     - npm run lint
     - npm run knip
   rules:
@@ -78,8 +84,8 @@ type_check:
 # ── Stage 5: Coverage ─────────────────────────────────────────────────────────
 coverage:
   stage: coverage
+  <<: *node_install
   script:
-    - npm ci
     - npm run coverage
   coverage: '/All files\s*\|\s*([\d\.]+)/'
   artifacts:
@@ -94,8 +100,8 @@ coverage:
 # ── Stage 6: Build ────────────────────────────────────────────────────────────
 build:
   stage: build
+  <<: *node_install
   script:
-    - npm ci
     - npx vite build
   artifacts:
     name: "dist-$CI_COMMIT_SHORT_SHA"
