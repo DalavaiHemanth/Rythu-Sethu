@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Send, Mic, Volume2, VolumeX, Image, RefreshCw, Sparkles, User, AlertCircle, Trash2, Camera, Compass, Copy, Check } from 'lucide-react';
 import { TRANSLATIONS, LanguageKey } from '../data/translations';
 import { Message } from '../types';
+import { getDocuments, generateChatResponse } from '../utils/geminiClient';
 
 interface ChatbotProps {
   language: LanguageKey;
@@ -28,21 +29,63 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
   const [isSoundOn, setIsSoundOn] = useState<boolean>(true);
   const [isListening, setIsListening] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
   
   // Accessibility state for elder farmers reading intricate scripts
   const [textSize, setTextSize] = useState<'sm' | 'md' | 'lg' | 'xl'>('md');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [loadedDocsCount, setLoadedDocsCount] = useState<number>(2);
 
+  // Sync the initial welcome greeting dynamically if language option is modified in app
   useEffect(() => {
-    fetch('/api/documents')
-      .then((res) => res.json())
+    setMessages((prev) => 
+      prev.map((msg) => {
+        if (msg.id === 'welcome') {
+          return {
+            ...msg,
+            content: getWelcomeMessage(language),
+            language: language,
+          };
+        }
+        return msg;
+      })
+    );
+  }, [language]);
+
+  // Warm up speechSynthesis voice cache on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      const handleVoicesChanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+      window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
+      return () => {
+        window.speechSynthesis?.removeEventListener('voiceschanged', handleVoicesChanged);
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    getDocuments()
       .then((data) => {
         if (Array.isArray(data)) {
           setLoadedDocsCount(data.length);
         }
       })
       .catch((err) => console.error('Error fetching docs count for sidebar:', err));
+  }, []);
+
+  // Warm up device synthesis voices list on load for smooth mobile playback
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          window.speechSynthesis.getVoices();
+        };
+      }
+    }
   }, []);
 
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -91,23 +134,31 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
   }, [messages, isLoading]);
 
   // Read Aloud Text (Speech Synthesis)
-  const speakText = (text: string, msgLanguage?: LanguageKey, isAutoPlay: boolean = false) => {
+  const speakText = (text: string, msgLanguage?: LanguageKey, isAutoPlay: boolean = false, msgId?: string) => {
     if (!window.speechSynthesis) return;
     if (isAutoPlay && !isSoundOn) return;
 
-    // Clear previous audio
+    // Toggle stop behavior if matching playing message is clicked again
+    if (speakingMessageId && msgId && speakingMessageId === msgId) {
+      window.speechSynthesis.cancel();
+      setSpeakingMessageId(null);
+      return;
+    }
+
+    // Force flush previous stream to avoid device freeze buffer lock
     window.speechSynthesis.cancel();
+    window.speechSynthesis.resume();
 
     // Clean text from markdown characters for better pronunciation
     const cleanText = text
-      .replace(/[*#_~`\[\]()]/g, '')
+      .replace(/[*#_~`\[\]()]/g, ' ')
       .replace(/&nbsp;/g, ' ')
       .substring(0, 350); // Truncate read lengths for farmer safety
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     
     // Choose voice locales based on the appropriate language
-    const speechLang = msgLanguage || language;
+    const speechLang = (msgLanguage || language).toLowerCase();
     if (speechLang === 'te') {
       utterance.lang = 'te-IN';
     } else if (speechLang === 'ur') {
@@ -116,17 +167,70 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
       utterance.lang = 'en-IN';
     }
 
-    // Attempt to match system voices accurately if available
+    // Target and match precise regional voice profile if installed
+    let matchedVoice = null;
     if (window.speechSynthesis.getVoices) {
       const voices = window.speechSynthesis.getVoices();
-      const prefix = speechLang === 'te' ? 'te' : speechLang === 'ur' ? 'ur' : 'en';
-      const matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith(prefix));
+      
+      if (voices && voices.length > 0) {
+        matchedVoice = voices.find(v => {
+          const vl = v.lang.toLowerCase().replace('_', '-');
+          const vn = v.name.toLowerCase();
+          
+          if (speechLang === 'te') {
+            return vl === 'te-in' || vl.startsWith('te') || vl.startsWith('tel') || vn.includes('telugu');
+          }
+          if (speechLang === 'ur') {
+            return vl === 'ur-in' || vl.startsWith('ur') || vl.startsWith('urd') || vn.includes('urdu');
+          }
+          if (speechLang === 'en') {
+            return vl === 'en-in' || vl.startsWith('en-') || vl.startsWith('en_') || vn.includes('india') || vn.includes('indian');
+          }
+          return false;
+        });
+
+        // First fallback for standard English
+        if (!matchedVoice && speechLang === 'en') {
+          matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith('en'));
+        }
+      }
+
       if (matchedVoice) {
         utterance.voice = matchedVoice;
       }
     }
 
+    // Log a warning in development console in case matching physical system voice profile is missing
+    if (speechLang !== 'en' && !matchedVoice) {
+      console.warn(`Rythu Sethu Speech: No explicit system voice found for locale target [${speechLang}]. Relying on modern automatic browser/OS language fallback.`);
+    }
+
     utterance.rate = 0.95; // Slightly slower for elderly farmer comfort
+
+    if (msgId) {
+      setSpeakingMessageId(msgId);
+    }
+
+    // Failsafe timer to reset UI in case browser synthesis locks permanently
+    const failsafe = setTimeout(() => {
+      setSpeakingMessageId(null);
+    }, 45000);
+
+    // Garbage collection protection for Safari & Chrome
+    (window as any)._activeUtterances = (window as any)._activeUtterances || [];
+    (window as any)._activeUtterances.push(utterance);
+
+    utterance.onend = () => {
+      clearTimeout(failsafe);
+      setSpeakingMessageId(null);
+      (window as any)._activeUtterances = ((window as any)._activeUtterances || []).filter((u: any) => u !== utterance);
+    };
+
+    utterance.onerror = () => {
+      clearTimeout(failsafe);
+      setSpeakingMessageId(null);
+      (window as any)._activeUtterances = ((window as any)._activeUtterances || []).filter((u: any) => u !== utterance);
+    };
 
     // Timeout delay resolves the typical Chrome/Webkit TTS lock Bug after cancel()
     setTimeout(() => {
@@ -230,6 +334,18 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
     const finalContent = customText || input;
     if (!finalContent.trim() && !image) return;
 
+    // Direct synchronous user interaction - prime & unlock SpeechSynthesis to bypass async autoplay block on Chrome/Safari/mobile browsers
+    if (typeof window !== 'undefined' && window.speechSynthesis && isSoundOn) {
+      try {
+        const primeUtterance = new SpeechSynthesisUtterance(' ');
+        primeUtterance.volume = 0;
+        primeUtterance.rate = 4.0;
+        window.speechSynthesis.speak(primeUtterance);
+      } catch (err) {
+        console.warn('Speech priming bypassed:', err);
+      }
+    }
+
     // Reset input states
     setInput('');
     const attachedImage = image;
@@ -251,23 +367,12 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
     try {
       const messageHistory = [...messages, userMessage];
 
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: messageHistory,
-          quizAnswers: quizAnswers || undefined,
-          locationInfo: selectedDistrict ? { district: selectedDistrict } : undefined,
-          language: language,
-        }),
+      const data = await generateChatResponse({
+        messages: messageHistory,
+        quizAnswers: quizAnswers || undefined,
+        locationInfo: selectedDistrict ? { district: selectedDistrict } : undefined,
+        language: language,
       });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Server returned an error answering your advice request.');
-      }
-
-      const data = await res.json();
       
       const assistantMessage: Message = {
         id: `m_${Date.now() + 1}`,
@@ -280,7 +385,7 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
       setMessages((prev) => [...prev, assistantMessage]);
       
       // Auto speak aloud if audio is on
-      speakText(data.reply, language, true);
+      speakText(data.reply, language, true, assistantMessage.id);
 
     } catch (err: any) {
       console.error(err);
@@ -460,13 +565,23 @@ export default function Chatbot({ language, quizAnswers, selectedDistrict }: Cha
                         {/* Copy and Speak out visual actions */}
                         {!isUser && (
                           <div className="absolute right-2 top-2 flex items-center gap-1 opacity-100 sm:opacity-0 group-hover/bubble:opacity-100 transition-all">
-                            <button
-                              onClick={() => speakText(msg.content, msg.language)}
-                              className="p-1.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-600 hover:text-emerald-800 transition-all cursor-pointer shadow-3xs"
-                              title="Speak advice aloud"
-                            >
-                              <Volume2 className="w-3.5 h-3.5" />
-                            </button>
+                            {speakingMessageId === msg.id ? (
+                              <button
+                                onClick={() => speakText(msg.content, msg.language, false, msg.id)}
+                                className="p-1.5 rounded-md bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 hover:text-rose-800 transition-all cursor-pointer shadow-3xs animate-pulse"
+                                title="Stop voice playback"
+                              >
+                                <VolumeX className="w-3.5 h-3.5" />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => speakText(msg.content, msg.language, false, msg.id)}
+                                className="p-1.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-600 hover:text-emerald-800 transition-all cursor-pointer shadow-3xs"
+                                title="Speak advice aloud"
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                             <button
                               onClick={() => handleCopyText(msg.content, msg.id)}
                               className="p-1.5 rounded-md bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-400 hover:text-crop-800 transition-all cursor-pointer shadow-3xs"
