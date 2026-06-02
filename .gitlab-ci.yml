@@ -1,64 +1,124 @@
-image: node:20-alpine
+# GitLab CI/CD Pipeline Configuration for Rythu Sethu
+# -----------------------------------------------------
+# This pipeline automates quality checks, linting, Docker image compilation, 
+# and provides templates for multi-destination deployment.
 
 stages:
-  - lint
+  - quality
   - build
   - deploy
 
-# Cache node_modules across jobs
-cache:
-  key:
-    files:
-      - package-lock.json
-  paths:
-    - node_modules/
+variables:
+  # Enable Docker-in-Docker build caching
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  # Name of the built Docker image using GitLab's built-in container registry
+  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+  IMAGE_TAG_LATEST: "$CI_REGISTRY_IMAGE:latest"
 
-# ── Stage 1: Lint ─────────────────────────────────────────────────────────────
-lint:
-  stage: lint
+# ---------------------------------------------------------------------------
+# Stage 1: Quality (Type-checking and Linting)
+# ---------------------------------------------------------------------------
+typecheck-and-lint:
+  stage: quality
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+  before_script:
+    - npm ci --cache .npm --prefer-offline
   script:
-    - npm ci
+    # Run the type-checker script
     - npm run lint
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
+    # Test compilation to verify there are no esbuild or bundling errors
+    - npm run build
 
-# ── Stage 2: Build ────────────────────────────────────────────────────────────
-build:
+# ---------------------------------------------------------------------------
+# Stage 2: Containerization (Build & push to GitLab Container Registry)
+# ---------------------------------------------------------------------------
+build-image:
   stage: build
-  script:
-    - npm ci
-    - npx vite build
-  artifacts:
-    name: "dist-$CI_COMMIT_SHORT_SHA"
-    paths:
-      - dist/
-    expire_in: 1 hour
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
   rules:
-    - if: $CI_COMMIT_BRANCH
-
-# ── Stage 3: Deploy to GitLab Pages ──────────────────────────────────────────
-#
-# GitLab Pages requires artifacts to be published into a folder called "public/".
-# The built React/Vite app lives in dist/ — we copy it over here.
-#
-# ⚠️  The Express backend (/api/chat) is NOT hosted by GitLab Pages (static only).
-#     To enable the AI Chatbot feature you must also deploy the Express server
-#     separately (e.g. Render, Railway, Fly.io) and set the VITE_API_URL
-#     variable in GitLab CI/CD → Settings → Variables.
-#
-pages:
-  stage: deploy
-  script:
-    - cp -r dist public
-  artifacts:
-    paths:
-      - public
-  rules:
+    # Only build and push the container image on the default branch (e.g. main/master) or merge requests
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
+    # Login to GitLab's built-in Container Registry
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    # Build container image utilizing Docker caching
+    - docker pull $IMAGE_TAG_LATEST || true
+    - >
+      docker build 
+      --cache-from $IMAGE_TAG_LATEST 
+      -t $IMAGE_TAG 
+      -t $IMAGE_TAG_LATEST 
+      .
+    # Push image to registry
+    - docker push $IMAGE_TAG
+    - docker push $IMAGE_TAG_LATEST
 
-# ── (Optional) Backend deployment hint ───────────────────────────────────────
-# To deploy the Express backend, add a job that builds dist/server.cjs
-# and deploys it to your chosen cloud provider.
-# Required CI/CD Variables (Settings → CI/CD → Variables):
-#   GEMINI_API_KEY  — your Google Gemini API key (mark as "Masked")
+# ---------------------------------------------------------------------------
+# Stage 3: Deployment (Uncomment & configure the destination of your choice)
+# ---------------------------------------------------------------------------
+
+# OPTION A: Deploy to Google Cloud Run (Recommended for multi-lingual apps)
+# To use this: Define variables `GCP_SERVICE_KEY`, `GCP_PROJECT_ID`, and `GCP_REGION` in GitLab Settings
+# deploy-to-cloud-run:
+#   stage: deploy
+#   image: google/cloud-sdk:alpine
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+#   script:
+#     # Authenticate with Google Cloud Platform using active Service Account Key variable
+#     - echo "$GCP_SERVICE_KEY" > gcloud-service-key.json
+#     - gcloud auth activate-service-account --key-file=gcloud-service-key.json
+#     - gcloud config set project $GCP_PROJECT_ID
+#     # Authenticate Docker client for GCP artifact registry
+#     - gcloud auth configure-docker
+#     # Push built image from GitLab registry directly to GCP Cloud Run
+#     - gcloud run deploy rythu-sethu 
+#         --image=$IMAGE_TAG 
+#         --platform=managed 
+#         --region=$GCP_REGION 
+#         --allow-unauthenticated
+#         --port=3000
+#         --set-env-vars="GEMINI_API_KEY=$GEMINI_API_KEY,NODE_ENV=production"
+
+# OPTION B: Deploy to Virtual Private Server (VPS / Ubuntu) via SSH
+# To use this: Define variables `SSH_KEY_PRIVATE`, `SERVER_IP`, and `SERVER_USER` in GitLab Settings
+# deploy-ssh-vps:
+#   stage: deploy
+#   image: alpine:latest
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+#   before_script:
+#     - apk add --no-cache openssh-client
+#     - eval $(ssh-agent -s)
+#     - echo "$SSH_KEY_PRIVATE" | tr -d '\r' | ssh-add -
+#     - mkdir -p ~/.ssh
+#     - chmod 700 ~/.ssh
+#     - ssh-keyscan $SERVER_IP >> ~/.ssh/known_hosts
+#     - chmod 644 ~/.ssh/known_hosts
+#   script:
+#     # SSH into server, pull latest image from GitLab Registry, stop stale container, and boot new one on Port 3000 securely
+#     - >
+#       ssh $SERVER_USER@$SERVER_IP "
+#         echo '$CI_REGISTRY_PASSWORD' | docker login -u '$CI_REGISTRY_USER' --password-stdin $CI_REGISTRY &&
+#         docker pull $IMAGE_TAG &&
+#         docker stop rythu-sethu-live || true &&
+#         docker rm rythu-sethu-live || true &&
+#         docker run -d 
+#           --name rythu-sethu-live 
+#           -p 3000:3000 
+#           -e GEMINI_API_KEY='$GEMINI_API_KEY' 
+#           -e NODE_ENV='production' 
+#           --restart unless-stopped 
+#           $IMAGE_TAG
+#       "
