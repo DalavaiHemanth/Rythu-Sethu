@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Wheat, Languages, Landmark, Sparkles, BookOpen, FileCheck2, MapPin, ChevronRight, PhoneCall, FileText, Calculator } from 'lucide-react';
+import { Wheat, Languages, Landmark, Sparkles, BookOpen, FileCheck2, MapPin, ChevronRight, PhoneCall, FileText, Calculator, Key } from 'lucide-react';
 import { TRANSLATIONS, LanguageKey } from './data/translations';
 import { TELANGANA_DISTRICTS_EN } from './data/staticData';
 import Chatbot from './components/Chatbot';
@@ -18,6 +18,33 @@ interface AgriNewsItem {
 export default function App() {
   const [language, setLanguage] = useState<LanguageKey>('te'); // Default to Telugu as per state target!
   const [activeTab, setActiveTab] = useState<'chat' | 'quiz' | 'map' | 'rag' | 'tools'>('chat');
+  
+  // Custom API Key states for serverless/GitLab pages environments
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState<boolean>(false);
+  const [tempApiKey, setTempApiKey] = useState<string>('');
+  const [isSavedNotify, setIsSavedNotify] = useState<string | null>(null);
+
+  // Initialize key from local storage if existing
+  useEffect(() => {
+    const saved = localStorage.getItem('rythu_sethu_gemini_api_key');
+    if (saved) {
+      setTempApiKey(saved);
+    }
+  }, []);
+
+  const handleSaveApiKey = () => {
+    if (tempApiKey.trim() === '') {
+      localStorage.removeItem('rythu_sethu_gemini_api_key');
+      setIsSavedNotify(t.apiKeyCleared);
+    } else {
+      localStorage.setItem('rythu_sethu_gemini_api_key', tempApiKey.trim());
+      setIsSavedNotify(t.apiKeySaved);
+    }
+    setTimeout(() => {
+      setIsSavedNotify(null);
+      setIsApiKeyModalOpen(false);
+    }, 1500);
+  };
   
   // Shared farm profile context
   const [quizAnswers, setQuizAnswers] = useState<Record<string, boolean> | null>(() => {
@@ -159,6 +186,16 @@ export default function App() {
                 اردو
               </button>
             </div>
+
+            {/* Gemini settings button */}
+            <button
+              id="api-key-config-trigger"
+              onClick={() => setIsApiKeyModalOpen(true)}
+              className="bg-crop-700/60 border border-white/20 hover:bg-crop-510/30 p-2 text-white font-sans font-medium flex items-center gap-2 text-xs transition duration-150 cursor-pointer h-[38px] rounded-lg"
+            >
+              <Key className="w-4 h-4 text-crop-510 shrink-0" />
+              <span className="hidden md:inline font-bold uppercase tracking-wider">{t.apiSettings}</span>
+            </button>
 
             {/* Direct Dial Hotline indicator */}
             <div className="bg-crop-700/60 border border-white/10 px-4 py-2.5 rounded-lg text-left hidden sm:flex items-center gap-2.5 text-xs text-white font-sans font-medium">
@@ -342,6 +379,93 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* 7. Beautiful Dialog Modal for local API keys */}
+      <AnimatePresence>
+        {isApiKeyModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 shadow-2xl" id="api-key-modal">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsApiKeyModalOpen(false)}
+              className="absolute inset-0 bg-stone-900/60 backdrop-blur-xs"
+            />
+
+            {/* Dialog Content */}
+            <motion.div
+              initial={{ scale: 0.95, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 15, opacity: 0 }}
+              className="relative w-full max-w-md bg-white rounded-xl shadow-xl overflow-hidden border border-stone-200 z-10 text-left"
+            >
+              <div className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-crop-50 flex items-center justify-center text-crop-600">
+                    <Key className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-stone-900">{t.apiSettings}</h3>
+                    <p className="text-xs text-stone-500 font-mono tracking-wider">SECURE CLIENT ENVIRONMENT</p>
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 tracking-wide uppercase mb-1.5">
+                      {t.apiKeyLabel}
+                    </label>
+                    <input
+                      type="password"
+                      id="api-key-input-field"
+                      value={tempApiKey}
+                      onChange={(e) => setTempApiKey(e.target.value)}
+                      placeholder={t.apiKeyPlaceholder}
+                      className="w-full text-sm py-2.5 px-3 bg-stone-50 border border-stone-200 rounded-lg focus:ring-2 focus:ring-crop-500 focus:border-crop-500 text-stone-900 placeholder-stone-400 font-mono outline-hidden"
+                    />
+                  </div>
+
+                  <div className="text-xs bg-stone-50 p-3 rounded-lg border border-stone-150 space-y-1 text-stone-600">
+                    <span className="font-bold text-stone-700 block mb-0.5">{t.apiKeyStatus}</span>
+                    {tempApiKey.trim() !== '' ? (
+                      <span className="text-emerald-750 font-semibold">{t.apiKeyStatusActive}</span>
+                    ) : (
+                      <span className="text-stone-500 font-medium">{t.apiKeyStatusEmpty}</span>
+                    )}
+                  </div>
+                </div>
+
+                {isSavedNotify && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-4 text-xs font-medium text-crop-800 bg-crop-50 border border-crop-200 p-2.5 rounded text-center"
+                  >
+                    {isSavedNotify}
+                  </motion.div>
+                )}
+
+                <div className="mt-6 flex justify-end gap-3 border-t border-stone-100 pt-4">
+                  <button
+                    onClick={() => setIsApiKeyModalOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-all cursor-pointer min-h-[38px]"
+                  >
+                    {t.apiClose}
+                  </button>
+                  <button
+                    id="api-key-save-btn"
+                    onClick={handleSaveApiKey}
+                    className="px-5 py-2 text-xs font-bold text-white bg-crop-600 hover:bg-crop-700 rounded-lg shadow-xs transition-all cursor-pointer min-h-[38px] flex items-center justify-center"
+                  >
+                    {t.apiKeySave}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
