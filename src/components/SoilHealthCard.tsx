@@ -15,9 +15,12 @@ import {
   Info,
   Layers,
   ThermometerSnowflake,
-  FlaskConical
+  FlaskConical,
+  Download
 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 import { LanguageKey } from '../data/translations';
+import { generateSoilCardAnalysis } from '../utils/geminiClient';
 
 interface SoilHealthCardProps {
   language: LanguageKey;
@@ -79,6 +82,18 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Warm up device synthesis voices list on load for smooth mobile playback
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          window.speechSynthesis.getVoices();
+        };
+      }
+    }
+  }, []);
+
   // Dynamic status translations local to Soil card for robustness
   const tl = {
     en: {
@@ -116,6 +131,7 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
       stopBtn: "Stop Voice 🔇",
       resetBtn: "Clear & Reset 🔄",
       fymComp: "Farmyard Manure / Bio-fertilizer suggested.",
+      downloadReport: "Download PDF 📄",
       dropText: "Drag & drop your Soil Health Card photo here, or click to upload",
       orText: "Supports JPG, PNG up to 10MB",
       cardSelected: "Selected image:",
@@ -158,6 +174,7 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
       stopBtn: "ఆపండి 🔇",
       resetBtn: "రీసెట్ చేయండి 🔄",
       fymComp: "సేంద్రీయ గుళికలు లేదా పశువుల పెంట అవసరము.",
+      downloadReport: "పీడీఎఫ్ రిపోర్ట్ 📄",
       dropText: "భూసార పరీక్ష పత్రం ఫోటోను ఇక్కడ వేయండి లేదా క్లిక్ చేసి సెలెక్ట్ చేయండి",
       orText: "JPG, PNG చిత్రాలకు మాత్రమే మద్దతు ఉంది (గరిష్టంగా 10MB)",
       cardSelected: "ఎంచుకున్న చిత్రం:",
@@ -200,6 +217,7 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
       stopBtn: "آواز بند کریں 🔇",
       resetBtn: "صاف کریں 🔄",
       fymComp: "نامیاتی کھاد یا گوبر کا استعمال تجویز کیا جاتا ہے۔",
+      downloadReport: "رپورٹ ڈاؤن لوڈ کریں 📄",
       dropText: "اپنے مٹی کی صحت کارڈ کی تصویر یہاں کھینچیں یا فائل تلاش کرنے کے لیے کلک کریں",
       orText: "صرف تصاویر (JPG، PNG) کی گنجائش ہے (زیادہ سے زیادہ 10MB)",
       cardSelected: "منتخب تصویر:",
@@ -290,13 +308,14 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
 
     // Cancel any running speech before initiating new
     window.speechSynthesis.cancel();
+    window.speechSynthesis.resume();
     setIsSpeaking(true);
 
     // Timeout buffer clear as prescribed by Rythu Sethu rules
     setTimeout(() => {
       // Remove markdown characters and clean up output for speech synthesis
       const cleanText = textToSpeak
-        .replace(/[*#`_\-]/g, ' ')
+        .replace(/[*#`_\-~\[\]()]/g, ' ')
         .replace(/&nbsp;/g, ' ')
         .replace(/\(\s+/g, '(')
         .replace(/\s+\)/g, ')')
@@ -304,34 +323,75 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
 
       const utterance = new SpeechSynthesisUtterance(cleanText);
       
+      const targetLangPrefix = language.toLowerCase();
       // Assign fallback voice region code
-      if (language === 'te') {
+      if (targetLangPrefix === 'te') {
         utterance.lang = 'te-IN';
-      } else if (language === 'ur') {
+      } else if (targetLangPrefix === 'ur') {
         utterance.lang = 'ur-IN';
       } else {
         utterance.lang = 'en-IN';
       }
 
-      // Query local physical speech systems voices
-      const voices = window.speechSynthesis.getVoices();
+      // Query local physical speech systems voices with precise filters
       let targetVoice = null;
-      if (language === 'te') {
-        targetVoice = voices.find(v => v.lang.startsWith('te') || v.lang.includes('te-IN'));
-      } else if (language === 'ur') {
-        targetVoice = voices.find(v => v.lang.startsWith('ur') || v.lang.includes('ur-IN'));
-      } else {
-        targetVoice = voices.find(v => v.lang.startsWith('en') || v.lang.includes('en-IN') || v.lang.includes('en-US'));
+      if (window.speechSynthesis.getVoices) {
+        const voices = window.speechSynthesis.getVoices();
+        
+        if (voices && voices.length > 0) {
+          targetVoice = voices.find(v => {
+            const vl = v.lang.toLowerCase().replace('_', '-');
+            const vn = v.name.toLowerCase();
+            
+            if (targetLangPrefix === 'te') {
+              return vl === 'te-in' || vl.startsWith('te') || vl.startsWith('tel') || vn.includes('telugu');
+            }
+            if (targetLangPrefix === 'ur') {
+              return vl === 'ur-in' || vl.startsWith('ur') || vl.startsWith('urd') || vn.includes('urdu');
+            }
+            if (targetLangPrefix === 'en') {
+              return vl === 'en-in' || vl.startsWith('en-') || vl.startsWith('en_') || vn.includes('india') || vn.includes('indian');
+            }
+            return false;
+          });
+
+          // First English fallback
+          if (!targetVoice && targetLangPrefix === 'en') {
+            targetVoice = voices.find(v => v.lang.toLowerCase().startsWith('en'));
+          }
+        }
+
+        if (targetVoice) {
+          utterance.voice = targetVoice;
+        }
       }
 
-      if (targetVoice) utterance.voice = targetVoice;
+      // Log diagnostic warning inside developer tools in case matching regional system voice profile is missing
+      if (targetLangPrefix !== 'en' && !targetVoice) {
+        console.warn(`SoilHealthCard Speech: No explicit system voice match found for target lang [${targetLangPrefix}]. Relying on modern browser/OS automatic localization fallback.`);
+      }
+
+      utterance.rate = 0.95; // Slightly slower for elderly farmer comfort
       
-      utterance.onend = () => {
+      // Failsafe timer to reset UI state if speech engine hangs
+      const failsafe = setTimeout(() => {
         setIsSpeaking(false);
+      }, 75000);
+
+      // Garbage collection protection for Safari & Chrome
+      (window as any)._activeUtterances = (window as any)._activeUtterances || [];
+      (window as any)._activeUtterances.push(utterance);
+
+      utterance.onend = () => {
+        clearTimeout(failsafe);
+        setIsSpeaking(false);
+        (window as any)._activeUtterances = ((window as any)._activeUtterances || []).filter((u: any) => u !== utterance);
       };
 
       utterance.onerror = () => {
+        clearTimeout(failsafe);
         setIsSpeaking(false);
+        (window as any)._activeUtterances = ((window as any)._activeUtterances || []).filter((u: any) => u !== utterance);
       };
 
       window.speechSynthesis.speak(utterance);
@@ -385,18 +445,7 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
           language
         };
 
-        const res = await fetch('/api/analyze-soil-card', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || 'Server error occured parsing soil metrics.');
-        }
-
-        const data = await res.json();
+        const data = await generateSoilCardAnalysis(payload);
         setAiReport(data);
       } catch (err: any) {
         console.error(err);
@@ -406,6 +455,288 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
         setLoadingStep('');
       }
     });
+  };
+
+  const handleDownloadPDF = () => {
+    if (!aiReport) return;
+    
+    // Create new A4 layout document (210mm x 297mm)
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    // Elegant High Contrast theme colors
+    const primaryColor = [6, 78, 59]; // Forest green #064e3b
+    const textDark = [28, 25, 23]; // Charcoal #1c1917
+    const textMuted = [100, 116, 139]; // Slate #64748b
+
+    // Outer double border for structural craftsmanship
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(0.8);
+    doc.rect(10, 10, 190, 277); // Outer boundary
+
+    doc.setDrawColor(220, 225, 222);
+    doc.setLineWidth(0.3);
+    doc.rect(12, 12, 186, 273); // Fine inner frame
+
+    // 1. HEADER SECTION with a beautiful subtle fill
+    doc.setFillColor(244, 247, 246);
+    doc.rect(13, 13, 184, 20, 'F');
+
+    // Title text
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text('RYTHU SETHU', 18, 21);
+
+    // Subtitle text
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+    doc.text("Telangana's Single-Window Farmer Advisory • Soil Health Certificate", 18, 27);
+
+    // Metadata details (Date, UI Language)
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-IN', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    doc.setFontSize(8);
+    doc.text(`Report Date: ${dateStr}`, 190, 21, { align: 'right' });
+    doc.text(`Selected Language: ${language.toUpperCase()}`, 190, 26, { align: 'right' });
+
+    let y = 43;
+
+    // SECTION I: SOIL CLASSIFICATION & CHEMICAL LAB RATINGS
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text('I. FARM & SOIL DIAGNOSTIC PROFILE', 15, y);
+    y += 4;
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(0.5);
+    doc.line(15, y, 195, y);
+    y += 6;
+
+    // Table parameters structure
+    doc.setFillColor(6, 78, 59);
+    doc.rect(15, y, 180, 7, 'F');
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text('Diagnostic Category', 18, y + 4.8);
+    doc.text('Provided/Extracted Values', 90, y + 4.8);
+    doc.text('Soil Interpretation Rating', 150, y + 4.8);
+    y += 7;
+
+    const metadataRows = [
+      { label: 'Target Cash Crop', val: soilValues.crop.toUpperCase() },
+      { label: 'Cultivable Acreage', val: `${soilValues.acres} Acre(s)` },
+      { label: 'Farming Season', val: soilValues.season.toUpperCase() },
+      { label: 'Physical Soil Texture', val: soilValues.soilTexture.toUpperCase() },
+      { label: 'Soil Acidity/Potential-pH', val: String(aiReport.soilPh || soilValues.pH) },
+      { label: 'Organic Carbon (OC %)', val: (aiReport.organicCarbon || soilValues.organicCarbon).toUpperCase() },
+      { label: 'Available Nitrogen (N)', val: (aiReport.nitrogen || soilValues.nitrogen).toUpperCase() },
+      { label: 'Available Phosphorus (P)', val: (aiReport.phosphorus || soilValues.phosphorus).toUpperCase() },
+      { label: 'Available Potassium (K)', val: (aiReport.potassium || soilValues.potassium).toUpperCase() }
+    ];
+
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(8);
+    
+    metadataRows.forEach((row, idx) => {
+      // Shading alternating rows for maximum high-contrast contrast
+      if (idx % 2 === 0) {
+        doc.setFillColor(250, 251, 249);
+        doc.rect(15, y, 180, 6.2, 'F');
+      }
+
+      doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+      doc.setFont('Helvetica', 'bold');
+      doc.text(row.label, 18, y + 4.2);
+
+      doc.setFont('Helvetica', 'normal');
+      doc.text(row.val, 90, y + 4.2);
+
+      // Interpret pH/NPK status rating
+      let ratingStr = 'Verified Input';
+      if (row.label.includes('Mineral') || row.label.includes('Crop')) {
+        ratingStr = 'State Standard';
+      } else if (row.label.includes('Acidity')) {
+        const phVal = Number(row.val) || 7.0;
+        ratingStr = phVal < 5.5 ? 'Strongly Acidic (Requires Lime)' : phVal < 6.5 ? 'Acidic' : phVal <= 7.5 ? 'Ideal Neutral' : phVal <= 8.5 ? 'Alkaline' : 'Strongly Alkaline (Uses Gypsum)';
+      } else if (row.label.includes('Carbon') || row.label.includes('Nitrogen') || row.label.includes('Phosphorus') || row.label.includes('Potassium')) {
+        const rating = row.val.toLowerCase();
+        ratingStr = rating === 'low' ? 'Low Deficient (Supplement)' : rating === 'high' ? 'High Satisfactory' : 'Medium Normal';
+      }
+      doc.text(ratingStr, 150, y + 4.2);
+
+      // Fine separator line
+      doc.setDrawColor(241, 243, 240);
+      doc.line(15, y + 6.2, 195, y + 6.2);
+      y += 6.2;
+    });
+
+    y += 5;
+
+    // Extract combined deficiencies list
+    const deficienciesList = [];
+    if (soilValues.zincDeficient || (aiReport.micronutrientDeficiencies && aiReport.micronutrientDeficiencies.some(d => d.toLowerCase().includes('zinc')))) {
+      deficienciesList.push('Zinc (Zn) Deficiency');
+    }
+    if (soilValues.ironDeficient || (aiReport.micronutrientDeficiencies && aiReport.micronutrientDeficiencies.some(d => d.toLowerCase().includes('iron')))) {
+      deficienciesList.push('Iron (Fe) Deficiency');
+    }
+    if (aiReport.micronutrientDeficiencies && aiReport.micronutrientDeficiencies.length > 0) {
+      aiReport.micronutrientDeficiencies.forEach(d => {
+        if (!deficienciesList.includes(d) && d.trim().length > 1) {
+          deficienciesList.push(d);
+        }
+      });
+    }
+
+    if (deficienciesList.length > 0) {
+      doc.setFillColor(254, 251, 235); // Gentle alert bg
+      doc.rect(15, y, 180, 8.5, 'F');
+      doc.setDrawColor(245, 158, 11);
+      doc.setLineWidth(0.35);
+      doc.rect(15, y, 180, 8.5);
+
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(180, 83, 9);
+      doc.text('⚠️ CRITICAL TRACE MINERAL DEFICIENCIES SPOTTED:', 18, y + 5.5);
+
+      doc.setFont('Helvetica', 'normal');
+      doc.text(deficienciesList.join(', ') + ' detected on land card', 105, y + 5.5);
+      y += 14;
+    } else {
+      y += 2;
+    }
+
+    // SECTION II: AI ADVISORY & RECOMMENDATIONS
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text('II. CROPS & TAILORED FERTILIZATION INSTRUCTIONS', 15, y);
+    y += 4;
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(0.5);
+    doc.line(15, y, 195, y);
+    y += 6;
+
+    // Format description text
+    const markdownStr = aiReport.recommendationsMarkdown || '';
+    const cleanOutput = markdownStr
+      .replace(/\*\*\*([^*]+)\*\*\*/g, '$1') // remove triple bold
+      .replace(/\*\*([^*]+)\*\*/g, '$1')   // remove bold markers
+      .replace(/\*([^*]+)\*/g, '$1')     // remove italic markers
+      .replace(/###\s*(.*)/g, '### $1')   // ensure clear spacing for custom rendering
+      .replace(/##\s*(.*)/g, '## $1')
+      .replace(/#\s*(.*)/g, '# $1')
+      .replace(/- /g, '• ');
+
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+
+    const linesGroup = cleanOutput.split('\n');
+    const bottomLineYLimit = 278;
+
+    linesGroup.forEach((line) => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) {
+        y += 4.5;
+        return;
+      }
+
+      // Check height before rendering line
+      if (y > bottomLineYLimit - 20) {
+        doc.addPage();
+        // Redraw frame borders for page integrity
+        doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.setLineWidth(0.8);
+        doc.rect(10, 10, 190, 277);
+        doc.setDrawColor(220, 225, 222);
+        doc.setLineWidth(0.3);
+        doc.rect(12, 12, 186, 273);
+        y = 18;
+      }
+
+      // Format custom header tags beautifully
+      if (trimmedLine.startsWith('###') || trimmedLine.startsWith('##') || trimmedLine.startsWith('Phase') || trimmedLine.startsWith('Step') || trimmedLine.startsWith('Recommendation')) {
+        const headerText = trimmedLine.replace(/^#{1,4}\s*/, '');
+        doc.setFont('Helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.text(headerText, 15, y);
+        y += 5.8;
+        doc.setFont('Helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+        return;
+      }
+
+      // Standard paragraphs word wrapping
+      const chunks = doc.splitTextToSize(trimmedLine, 178);
+      chunks.forEach((chunk: string) => {
+        if (y > bottomLineYLimit - 15) {
+          doc.addPage();
+          doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+          doc.setLineWidth(0.8);
+          doc.rect(10, 10, 190, 277);
+          doc.setDrawColor(220, 225, 222);
+          doc.setLineWidth(0.3);
+          doc.rect(12, 12, 186, 273);
+          y = 18;
+        }
+
+        // Bold lists, steps or key terms
+        const isFocusText = chunk.includes('•') || chunk.startsWith('Note') || chunk.startsWith('*') || chunk.includes('Urea') || chunk.includes('DAP') || chunk.includes('MOP');
+        if (isFocusText) {
+          doc.setFont('Helvetica', 'bold');
+        } else {
+          doc.setFont('Helvetica', 'normal');
+        }
+
+        doc.text(chunk, 15, y);
+        y += 4.8;
+      });
+    });
+
+    // Disclaimer spacing control 
+    y = Math.max(y, bottomLineYLimit - 25);
+    if (y > bottomLineYLimit - 18) {
+      doc.addPage();
+      doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.setLineWidth(0.8);
+      doc.rect(10, 10, 190, 277);
+      doc.setDrawColor(220, 225, 222);
+      doc.setLineWidth(0.3);
+      doc.rect(12, 12, 186, 273);
+      y = bottomLineYLimit - 26;
+    }
+
+    doc.setDrawColor(215, 220, 218);
+    doc.setLineWidth(0.25);
+    doc.line(15, y, 195, y);
+    y += 4.5;
+
+    doc.setFont('Courier', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(140, 142, 145);
+
+    const footerDisclaimerText = 'Disclaimer: This Soil Health card report was dynamically modeled using Gemini AI templates. Content should be cross-verified physically with local Agronomist Extension Officers (AEO) or PJTSAU cooperative centers prior to bulk field fertilization. Rythu Sethu serves as a public agricultural research framework.';
+    const disclaimerSplit = doc.splitTextToSize(footerDisclaimerText, 178);
+    disclaimerSplit.forEach((line: string) => {
+      doc.text(line, 15, y);
+      y += 3.2;
+    });
+
+    // Save final rendered PDF certificate
+    doc.save(`Rythu_Sethu_Report_${soilValues.crop}_${soilValues.season}.pdf`);
   };
 
   const handleReset = () => {
@@ -861,6 +1192,15 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
                           <span>{cur.listenBtn}</span>
                         </>
                       )}
+                    </button>
+                    {/* PDF Download Button */}
+                    <button
+                      id="shc-download-report-btn"
+                      onClick={handleDownloadPDF}
+                      className="min-h-[44px] px-3.5 border border-emerald-600 bg-white hover:bg-emerald-50 text-emerald-800 rounded-lg text-xs font-bold cursor-pointer shadow-3xs flex items-center gap-1.5 shrink-0"
+                    >
+                      <Download className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{cur.downloadReport || "Download PDF"}</span>
                     </button>
                     {/* Clear report trigger */}
                     <button
