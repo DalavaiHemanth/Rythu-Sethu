@@ -68,56 +68,98 @@ build-image:
 # ---------------------------------------------------------------------------
 
 # OPTION A: Deploy to Google Cloud Run (Recommended for multi-lingual apps)
-# To use this: Define variables `GCP_SERVICE_KEY`, `GCP_PROJECT_ID`, and `GCP_REGION` in GitLab Settings
-# deploy-to-cloud-run:
-#   stage: deploy
-#   image: google/cloud-sdk:alpine
-#   rules:
-#     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-#   script:
-#     # Authenticate with Google Cloud Platform using active Service Account Key variable
-#     - echo "$GCP_SERVICE_KEY" > gcloud-service-key.json
-#     - gcloud auth activate-service-account --key-file=gcloud-service-key.json
-#     - gcloud config set project $GCP_PROJECT_ID
-#     # Authenticate Docker client for GCP artifact registry
-#     - gcloud auth configure-docker
-#     # Push built image from GitLab registry directly to GCP Cloud Run
-#     - gcloud run deploy rythu-sethu 
-#         --image=$IMAGE_TAG 
-#         --platform=managed 
-#         --region=$GCP_REGION 
-#         --allow-unauthenticated
-#         --port=3000
-#         --set-env-vars="GEMINI_API_KEY=$GEMINI_API_KEY,NODE_ENV=production"
+# Secure authentication options:
+#   1. Workload Identity Federation (OIDC) - Preferred (No static key JSON files needed)
+#      Variables needed: GCP_PROJECT_ID, GCP_PROJECT_NUMBER, GCP_POOL_ID, GCP_PROVIDER_ID, GCP_SERVICE_ACCOUNT, GCP_REGION
+#   2. Classic Service Account JSON Key (Fallback)
+#      Variables needed: GCP_SERVICE_KEY, GCP_PROJECT_ID, GCP_REGION
+deploy-to-cloud-run:
+  stage: deploy
+  image: google/cloud-sdk:alpine
+  services:
+    - docker:24.0.5-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+  id_tokens:
+    GCP_ID_TOKEN:
+      aud: "https://iam.googleapis.com/projects/$GCP_PROJECT_NUMBER/locations/global/workloadIdentityPools/$GCP_POOL_ID/providers/$GCP_PROVIDER_ID"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  before_script:
+    # Install docker CLI to pull/push registry images
+    - apk add --no-cache docker-cli
+    # Authenticate with GitLab Registry
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+    # Authenticate with Google Cloud Platform
+    - |
+      if [ -n "$GCP_POOL_ID" ] && [ -n "$GCP_PROVIDER_ID" ] && [ -n "$GCP_PROJECT_NUMBER" ] && [ -n "$GCP_SERVICE_ACCOUNT" ]; then
+        echo "Authenticating using Workload Identity Federation (OIDC)..."
+        echo "${GCP_ID_TOKEN}" > /tmp/oidc_token
+        # Generate the Google Cloud federated credential configuration file helper
+        gcloud iam workload-identity-pools create-cred-config \
+          "projects/${GCP_PROJECT_NUMBER}/locations/global/workloadIdentityPools/${GCP_POOL_ID}/providers/${GCP_PROVIDER_ID}" \
+          --service-account="${GCP_SERVICE_ACCOUNT}" \
+          --output-file=/tmp/gcp_creds.json \
+          --credential-source-file=/tmp/oidc_token
+        export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp_creds.json
+        gcloud auth login --cred-file=/tmp/gcp_creds.json --quiet
+      elif [ -n "$GCP_SERVICE_KEY" ]; then
+        echo "Found GCP_SERVICE_KEY. Authenticating using static JSON service account key..."
+        echo "$GCP_SERVICE_KEY" > gcloud-service-key.json
+        gcloud auth activate-service-account --key-file=gcloud-service-key.json --quiet
+      else
+        echo "Error: Neither Workload Identity Federation OIDC variables nor GCP_SERVICE_KEY were found."
+        echo "Please set up either OIDC (GCP_PROJECT_NUMBER, GCP_POOL_ID, GCP_PROVIDER_ID, GCP_SERVICE_ACCOUNT) or GCP_SERVICE_KEY in GitLab Settings."
+        exit 1
+      fi
+    - gcloud config set project $GCP_PROJECT_ID
+    # Authenticate Docker client for GCP Container Registry (GCR)
+    - gcloud auth configure-docker --quiet
+  script:
+    # Pull the production-ready image from GitLab Registry
+    - docker pull $IMAGE_TAG
+    # Tag the image for Google Container Registry (GCR)
+    - GCR_IMAGE="gcr.io/$GCP_PROJECT_ID/rythu-sethu:$CI_COMMIT_SHA"
+    - docker tag $IMAGE_TAG $GCR_IMAGE
+    # Push the image to GCP Container Registry
+    - docker push $GCR_IMAGE
+    # Deploy built image securely to Google Cloud Run
+    - gcloud run deploy rythu-sethu 
+        --image=$GCR_IMAGE 
+        --platform=managed 
+        --region=$GCP_REGION 
+        --allow-unauthenticated
+        --port=3000
+        --set-env-vars="GEMINI_API_KEY=$GEMINI_API_KEY,NODE_ENV=production"
 
 # OPTION B: Deploy to Virtual Private Server (VPS / Ubuntu) via SSH
 # To use this: Define variables `SSH_KEY_PRIVATE`, `SERVER_IP`, and `SERVER_USER` in GitLab Settings
- deploy-ssh-vps:
-   stage: deploy
-   image: alpine:latest
-   rules:
-     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-   before_script:
-     - apk add --no-cache openssh-client
-     - eval $(ssh-agent -s)
-     - echo "$SSH_KEY_PRIVATE" | tr -d '\r' | ssh-add -
-     - mkdir -p ~/.ssh
-     - chmod 700 ~/.ssh
-     - ssh-keyscan $SERVER_IP >> ~/.ssh/known_hosts
-     - chmod 644 ~/.ssh/known_hosts
-   script:
-     # SSH into server, pull latest image from GitLab Registry, stop stale container, and boot new one on Port 3000 securely
-     - >
-       ssh $SERVER_USER@$SERVER_IP "
-         echo '$CI_REGISTRY_PASSWORD' | docker login -u '$CI_REGISTRY_USER' --password-stdin $CI_REGISTRY &&
-         docker pull $IMAGE_TAG &&
-         docker stop rythu-sethu-live || true &&
-         docker rm rythu-sethu-live || true &&
-         docker run -d 
-           --name rythu-sethu-live 
-           -p 3000:3000 
-           -e GEMINI_API_KEY='$GEMINI_API_KEY' 
-           -e NODE_ENV='production' 
-           --restart unless-stopped 
-           $IMAGE_TAG
-       "
+# deploy-ssh-vps:
+#   stage: deploy
+#   image: alpine:latest
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+#   before_script:
+#     - apk add --no-cache openssh-client
+#     - eval $(ssh-agent -s)
+#     - echo "$SSH_KEY_PRIVATE" | tr -d '\r' | ssh-add -
+#     - mkdir -p ~/.ssh
+#     - chmod 700 ~/.ssh
+#     - ssh-keyscan $SERVER_IP >> ~/.ssh/known_hosts
+#     - chmod 644 ~/.ssh/known_hosts
+#   script:
+#     # SSH into server, pull latest image from GitLab Registry, stop stale container, and boot new one on Port 3000 securely
+#     - >
+#       ssh $SERVER_USER@$SERVER_IP "
+#         echo '$CI_REGISTRY_PASSWORD' | docker login -u '$CI_REGISTRY_USER' --password-stdin $CI_REGISTRY &&
+#         docker pull $IMAGE_TAG &&
+#         docker stop rythu-sethu-live || true &&
+#         docker rm rythu-sethu-live || true &&
+#         docker run -d 
+#           --name rythu-sethu-live 
+#           -p 3000:3000 
+#           -e GEMINI_API_KEY='$GEMINI_API_KEY' 
+#           -e NODE_ENV='production' 
+#           --restart unless-stopped 
+#           $IMAGE_TAG
+#       "
