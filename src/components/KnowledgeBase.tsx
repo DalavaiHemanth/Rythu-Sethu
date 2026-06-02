@@ -26,6 +26,14 @@ export default function KnowledgeBase({
   onDocumentAdded,
 }: KnowledgeBaseProps) {
   const t = TRANSLATIONS[language];
+
+  const pSpacingClass =
+    language === 'te'
+      ? 'leading-[1.95] tracking-[0.035em]'
+      : language === 'ur'
+        ? 'leading-[1.95] tracking-[0.04em]'
+        : 'leading-relaxed';
+
   const [documents, setDocuments] = useState<UploadedDoc[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -158,7 +166,7 @@ export default function KnowledgeBase({
                 <FilePlus className="w-5.5 h-5.5 text-crop-600 shrink-0" />
                 {selectedDoc ? '✏️ Loaded Circular Editor' : t.ragHeader}
               </h2>
-              <p className="text-xs text-stone-500 leading-relaxed">
+              <p className={`text-xs text-stone-500 ${pSpacingClass}`}>
                 {selectedDoc
                   ? "You are viewing/modifying an active G.O. policy. Click 'Reset Form' to start a new document write."
                   : t.ragDesc}
@@ -168,7 +176,7 @@ export default function KnowledgeBase({
               <button
                 type="button"
                 onClick={handleClearSelection}
-                className="px-2.5 py-1 text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded text-[10px] font-mono font-bold tracking-tight uppercase cursor-pointer shrink-0"
+                className="px-2.5 py-1 text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded text-[10px] font-mono font-bold tracking-tight uppercase cursor-pointer shrink-0 min-h-[44px] flex items-center justify-center"
               >
                 Reset Form ✕
               </button>
@@ -187,7 +195,7 @@ export default function KnowledgeBase({
               <input
                 id="doc-title-in"
                 type="text"
-                className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 px-4 text-xs focus:ring-2 focus:ring-crop-600 focus:outline-none"
+                className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 px-4 text-xs focus:ring-2 focus:ring-crop-600 focus:outline-none min-h-[44px]"
                 placeholder="e.g. Telangana Rain-fed Compensation GO 103"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -205,7 +213,9 @@ export default function KnowledgeBase({
                 className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
               />
               <div className="space-y-1">
-                <p className="text-xs font-sans text-stone-600 font-medium group-hover:text-crop-700 transition-colors">
+                <p
+                  className={`text-xs font-sans text-stone-600 font-medium group-hover:text-crop-700 transition-colors ${pSpacingClass}`}
+                >
                   📎 Drag / Upload reference text circular (.txt)
                 </p>
                 <p className="text-[10px] text-stone-400">
@@ -264,7 +274,7 @@ export default function KnowledgeBase({
               id="btn-upload-doc"
               type="submit"
               disabled={submitting || !title || !content}
-              className="w-full bg-crop-600 hover:bg-crop-700 active:bg-crop-800 disabled:bg-stone-200 disabled:text-stone-400 text-white font-sans font-bold py-3.5 px-6 rounded-lg text-xs transition-all shadow-sm flex items-center justify-center gap-2 tracking-wider border-b-2 border-crop-800 uppercase cursor-pointer"
+              className="w-full bg-crop-600 hover:bg-crop-700 active:bg-crop-800 disabled:bg-stone-200 disabled:text-stone-400 text-white font-sans font-bold py-3.5 px-6 rounded-lg text-xs transition-all shadow-sm flex items-center justify-center gap-2 tracking-wider border-b-2 border-crop-800 uppercase cursor-pointer min-h-[44px]"
             >
               {submitting ? (
                 <>
@@ -362,7 +372,9 @@ export default function KnowledgeBase({
             <p className="text-[10px] font-mono text-crop-200 uppercase tracking-wider">
               💡 RAG Intelligence Feature
             </p>
-            <p className="text-[11px] text-stone-200 leading-relaxed font-sans">
+            <p
+              className={`text-[11px] text-stone-200 font-sans ${pSpacingClass}`}
+            >
               Rythu Sethu bypasses rigid text matching. Uploading any G.O.
               details above automatically appends it into the Gemini Chat
               context. Any farmer can then query it using the Chat tab

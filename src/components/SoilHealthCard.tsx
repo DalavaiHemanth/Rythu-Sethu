@@ -162,7 +162,8 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
       stopBtn: 'ఆపండి 🔇',
       resetBtn: 'రీసెట్ చేయండి 🔄',
       fymComp: 'సేంద్రీయ గుళికలు లేదా పశువుల పెంట అవసరము.',
-      dropText: 'భూసార పరీక్ష పత్రం ఫోటోను ఇక్కడ వేయండి లేదా క్లిక్ చేసి సెలెక్ట్ చేయండి',
+      dropText:
+        'భూసార పరీక్ష పత్రం ఫోటోను ఇక్కడ వేయండి లేదా క్లిక్ చేసి సెలెక్ట్ చేయండి',
       orText: 'JPG, PNG చిత్రాలకు మాత్రమే మద్దతు ఉంది (గరిష్టంగా 10MB)',
       cardSelected: 'ఎంచుకున్న చిత్రం:',
       removeBtn: 'చిత్రం తొలగించు',
@@ -220,6 +221,13 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
   };
 
   const cur = tl[language] || tl.en;
+
+  const pSpacingClass =
+    language === 'te'
+      ? 'leading-[1.95] tracking-[0.035em]'
+      : language === 'ur'
+        ? 'leading-[1.95] tracking-[0.04em]'
+        : 'leading-relaxed';
 
   // Render classification helpers based on values
   const getPHStatus = (val: number) => {
@@ -496,9 +504,7 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
           <FlaskConical className="w-5.5 h-5.5 text-crop-600 animate-pulse animate-duration-3000" />
           {cur.shcTitle}
         </h3>
-        <p
-          className={`text-xs text-stone-600 leading-relaxed ${language === 'te' ? 'leading-[1.75]' : ''}`}
-        >
+        <p className={`text-xs text-stone-600 ${pSpacingClass}`}>
           {cur.shcSubtitle}
         </p>
       </div>
@@ -563,7 +569,8 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
                       },
                       {
                         id: 'cotton',
-                        label: language === 'te' ? 'ప్రత్తి (Cotton)' : 'Cotton',
+                        label:
+                          language === 'te' ? 'ప్రత్తి (Cotton)' : 'Cotton',
                       },
                       {
                         id: 'chilli',
@@ -571,7 +578,8 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
                       },
                       {
                         id: 'maize',
-                        label: language === 'te' ? 'మొక్కజొన్న (Maize)' : 'Maize',
+                        label:
+                          language === 'te' ? 'మొక్కజొన్న (Maize)' : 'Maize',
                       },
                     ].map((item) => (
                       <button
@@ -909,7 +917,9 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
                     <Upload className="w-6 h-6 animate-pulse" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-stone-800 leading-normal">
+                    <p
+                      className={`text-xs font-bold text-stone-800 ${pSpacingClass}`}
+                    >
                       {cur.dropText}
                     </p>
                     <p className="text-[10px] text-stone-400 font-medium">
@@ -952,7 +962,7 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
           {errorMsg && (
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-[11px] font-semibold text-rose-700 flex gap-1.5 items-start">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-              <p className="leading-normal">{errorMsg}</p>
+              <p className={pSpacingClass}>{errorMsg}</p>
             </div>
           )}
 
@@ -1002,7 +1012,9 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
                   <h4 className="text-xs font-mono font-black text-crop-800 tracking-widest uppercase">
                     Analyzing Sample parameters
                   </h4>
-                  <p className="text-xs font-bold text-stone-705 leading-relaxed min-h-[40px]">
+                  <p
+                    className={`text-xs font-bold text-stone-705 min-h-[40px] ${pSpacingClass}`}
+                  >
                     {loadingStep}
                   </p>
                 </div>
@@ -1157,7 +1169,9 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
                   <h4 className="text-xs font-mono font-black text-stone-405 uppercase tracking-widest">
                     No active sample diagnostics
                   </h4>
-                  <p className="text-xs text-stone-500 leading-relaxed font-sans">
+                  <p
+                    className={`text-xs text-stone-500 font-sans ${pSpacingClass}`}
+                  >
                     {cur.noResults}
                   </p>
                 </div>

@@ -27,6 +27,14 @@ export default function SchemeQuiz({
   onQuizCompleted,
 }: SchemeQuizProps) {
   const t = TRANSLATIONS[language];
+
+  const pSpacingClass =
+    language === 'te'
+      ? 'leading-[1.95] tracking-[0.035em]'
+      : language === 'ur'
+        ? 'leading-[1.95] tracking-[0.04em]'
+        : 'leading-relaxed';
+
   const [quizMode, setQuizMode] = useState<'form' | 'steps'>('form'); // Default to Direct Form Mode!
   const [currentStep, setCurrentStep] = useState<number>(0);
 
@@ -181,7 +189,7 @@ export default function SchemeQuiz({
               <div className="inline-flex rounded-md p-0.5 bg-stone-100 border border-stone-200 shrink-0 self-start sm:self-center">
                 <button
                   onClick={() => setQuizMode('form')}
-                  className={`px-3 py-1 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[44px] ${
                     quizMode === 'form'
                       ? 'bg-crop-600 text-white shadow-3xs'
                       : 'text-stone-600 hover:text-stone-900'
@@ -199,7 +207,7 @@ export default function SchemeQuiz({
                     setQuizMode('steps');
                     setCurrentStep(0);
                   }}
-                  className={`px-3 py-1 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[44px] ${
                     quizMode === 'steps'
                       ? 'bg-crop-600 text-white shadow-3xs'
                       : 'text-stone-600 hover:text-stone-900'
@@ -219,7 +227,9 @@ export default function SchemeQuiz({
               /* ONE-PAGE FORM INTERFACE: SAVES EVERYTHING AT ONCE */
               <div className="space-y-6">
                 <div className="text-left bg-crop-50/20 border border-crop-100 rounded-lg p-3.5">
-                  <p className="text-xs text-crop-900 font-medium leading-relaxed">
+                  <p
+                    className={`text-xs text-crop-900 font-medium ${pSpacingClass}`}
+                  >
                     💡{' '}
                     <strong>
                       {language === 'te'
@@ -250,7 +260,7 @@ export default function SchemeQuiz({
                       >
                         <div className="flex-1 pr-4">
                           <p
-                            className={`font-sans font-semibold text-stone-800 ${language === 'te' ? 'text-base font-medium' : 'text-xs md:text-sm'}`}
+                            className={`font-sans font-semibold text-stone-800 ${language === 'te' ? 'text-base font-medium' : 'text-xs md:text-sm'} ${pSpacingClass}`}
                           >
                             {q.text}
                           </p>
@@ -279,13 +289,13 @@ export default function SchemeQuiz({
 
                 <button
                   onClick={handleFormSubmit}
-                  className="w-full bg-crop-600 hover:bg-crop-700 active:bg-crop-800 text-white font-sans font-bold py-4 px-6 rounded-lg text-sm transition-all shadow-sm border-b-2 border-crop-800 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full bg-crop-600 hover:bg-crop-700 active:bg-crop-800 text-white font-sans font-bold py-4 px-6 rounded-lg text-sm transition-all shadow-sm border-b-2 border-crop-800 flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
                 >
                   <CheckCircle2 className="w-5 h-5" />
                   {language === 'te'
                     ? 'అర్హతను విశ్లేషించండి & వివరాలను సేవ్ చేయండి'
                     : language === 'ur'
-                      ? 'اہلیت کا تجزیہ کریں اور محفوظ کریں'
+                      ? 'اهلیت کا تجزیہ کریں اور محفوظ کریں'
                       : 'Save Attributes & Check Eligibility'}
                 </button>
               </div>
@@ -325,7 +335,7 @@ export default function SchemeQuiz({
                   <button
                     id="btn-quiz-yes"
                     onClick={() => handleAnswerSteps(true)}
-                    className="bg-crop-600 hover:bg-crop-700 active:bg-crop-800 text-white font-sans font-bold py-4 px-6 rounded-lg text-sm transition-all shadow-sm border-b-2 border-crop-800 flex items-center justify-center gap-2 cursor-pointer"
+                    className="bg-crop-600 hover:bg-crop-700 active:bg-crop-800 text-white font-sans font-bold py-4 px-6 rounded-lg text-sm transition-all shadow-sm border-b-2 border-crop-800 flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     {t.yes}
@@ -333,7 +343,7 @@ export default function SchemeQuiz({
                   <button
                     id="btn-quiz-no"
                     onClick={() => handleAnswerSteps(false)}
-                    className="bg-stone-100 hover:bg-stone-200 active:bg-stone-300 text-stone-700 font-sans font-bold py-4 px-6 rounded-lg text-sm transition-all border border-stone-200 flex items-center justify-center gap-2 cursor-pointer"
+                    className="bg-stone-100 hover:bg-stone-200 active:bg-stone-300 text-stone-700 font-sans font-bold py-4 px-6 rounded-lg text-sm transition-all border border-stone-200 flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
                   >
                     <XCircle className="w-4 h-4" />
                     {t.no}
@@ -361,7 +371,9 @@ export default function SchemeQuiz({
                 <h2 className="text-2xl font-display font-medium text-white tracking-tight">
                   {t.results}
                 </h2>
-                <p className="text-xs text-stone-200 max-w-md mx-auto leading-relaxed font-sans">
+                <p
+                  className={`text-xs text-stone-200 max-w-md mx-auto font-sans ${pSpacingClass}`}
+                >
                   {t.matchSuccess}
                 </p>
               </div>
@@ -437,7 +449,9 @@ export default function SchemeQuiz({
                               ? scheme.nameUr
                               : scheme.nameEn}
                         </h3>
-                        <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                        <p
+                          className={`text-xs text-stone-600 mt-1 ${pSpacingClass}`}
+                        >
                           {language === 'te'
                             ? scheme.descTe
                             : language === 'ur'
@@ -452,7 +466,7 @@ export default function SchemeQuiz({
                           <p className="font-bold text-crop-800 flex items-center gap-1.5 mb-1 text-[11px] uppercase tracking-wide">
                             🟢 {t.benefits}
                           </p>
-                          <p className="leading-relaxed text-stone-650">
+                          <p className={`text-stone-650 ${pSpacingClass}`}>
                             {language === 'te'
                               ? scheme.benefitsTe
                               : language === 'ur'
@@ -466,7 +480,7 @@ export default function SchemeQuiz({
                           <p className="font-bold text-crop-900 flex items-center gap-1.5 mb-1 text-[11px] uppercase tracking-wide">
                             🌾 {t.applyNow}
                           </p>
-                          <p className="leading-relaxed text-stone-650">
+                          <p className={`text-stone-650 ${pSpacingClass}`}>
                             {language === 'te'
                               ? scheme.howToApplyTe
                               : language === 'ur'
@@ -481,7 +495,9 @@ export default function SchemeQuiz({
               ) : (
                 <div className="bg-white border border-earth-100 rounded-xl p-8 py-12 text-center text-stone-500">
                   <p className="text-xl">🏜️</p>
-                  <p className="text-sm font-medium mt-2">{t.notEligible}</p>
+                  <p className={`text-sm font-medium mt-2 ${pSpacingClass}`}>
+                    {t.notEligible}
+                  </p>
                 </div>
               )}
             </div>
@@ -491,7 +507,7 @@ export default function SchemeQuiz({
               <button
                 id="btn-quiz-reset"
                 onClick={handleReset}
-                className="flex items-center gap-2 bg-stone-150 hover:bg-stone-200 text-stone-800 font-sans font-bold py-3 px-5 rounded-lg text-xs transition-all tracking-wider shadow-sm cursor-pointer border border-stone-250"
+                className="flex items-center justify-center gap-2 bg-stone-150 hover:bg-stone-200 text-stone-800 font-sans font-bold py-3 px-5 rounded-lg text-xs transition-all tracking-wider shadow-sm cursor-pointer border border-stone-250 min-h-[44px]"
               >
                 <RefreshCw className="w-4 h-4" />
                 {language === 'te'

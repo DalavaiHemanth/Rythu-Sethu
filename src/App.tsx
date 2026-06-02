@@ -70,6 +70,13 @@ export default function App() {
     fetchAgriNews();
   }, [language]);
 
+  const pSpacingClass =
+    language === 'te'
+      ? 'leading-[1.95] tracking-[0.035em]'
+      : language === 'ur'
+        ? 'leading-[1.95] tracking-[0.04em]'
+        : 'leading-relaxed';
+
   // Rotate news ticker
   useEffect(() => {
     if (news.length === 0) return;
@@ -107,7 +114,7 @@ export default function App() {
               id="global-district-sc"
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="bg-stone-800 text-white font-mono font-semibold py-0.5 px-2 rounded-sm border border-stone-700 text-[11px]"
+              className="bg-stone-800 text-white font-mono font-semibold py-0.5 px-2 rounded-sm border border-stone-700 text-[11px] min-h-[44px]"
             >
               {TELANGANA_DISTRICTS_EN.map((d) => (
                 <option key={d} value={d}>
@@ -131,7 +138,9 @@ export default function App() {
               <div className="flex items-baseline gap-2">
                 <h1 className="text-2xl font-display font-black tracking-tight flex items-baseline gap-2">
                   RYTHU SETHU{' '}
-                  <span className="font-light text-sm opacity-90">రైతు సేతు</span>
+                  <span className="font-light text-sm opacity-90">
+                    రైతు సేతు
+                  </span>
                 </h1>
                 <span className="px-2 py-0.5 rounded bg-white/20 text-white text-[10px] font-mono font-bold uppercase tracking-wider">
                   TG Govt
@@ -153,7 +162,7 @@ export default function App() {
               <button
                 id="lang-te-btn"
                 onClick={() => handleLanguageChange('te')}
-                className={`px-3 py-1.5 text-xs font-bold rounded transition-all cursor-pointer ${
+                className={`px-3 py-1.5 min-h-[44px] flex items-center justify-center text-xs font-bold rounded transition-all cursor-pointer ${
                   language === 'te'
                     ? 'bg-crop-510 text-crop-600 font-extrabold shadow-sm'
                     : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -164,7 +173,7 @@ export default function App() {
               <button
                 id="lang-en-btn"
                 onClick={() => handleLanguageChange('en')}
-                className={`px-3 py-1.5 text-xs font-bold rounded transition-all cursor-pointer ${
+                className={`px-3 py-1.5 min-h-[44px] flex items-center justify-center text-xs font-bold rounded transition-all cursor-pointer ${
                   language === 'en'
                     ? 'bg-crop-510 text-crop-600 font-extrabold shadow-sm'
                     : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -175,7 +184,7 @@ export default function App() {
               <button
                 id="lang-ur-btn"
                 onClick={() => handleLanguageChange('ur')}
-                className={`px-3 py-1.5 text-xs font-bold rounded transition-all cursor-pointer ${
+                className={`px-3 py-1.5 min-h-[44px] flex items-center justify-center text-xs font-bold rounded transition-all cursor-pointer ${
                   language === 'ur'
                     ? 'bg-crop-510 text-crop-600 font-extrabold shadow-sm'
                     : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -212,7 +221,9 @@ export default function App() {
             <h2 className="text-xl md:text-2xl font-display font-bold text-crop-900 tracking-tight">
               {t.welTitle}
             </h2>
-            <p className="text-xs md:text-sm text-stone-700 leading-relaxed font-sans font-medium">
+            <p
+              className={`text-xs md:text-sm text-stone-700 font-sans font-medium ${pSpacingClass}`}
+            >
               {t.welDesc}
             </p>
           </div>
@@ -231,7 +242,7 @@ export default function App() {
             <button
               id="tab-chat"
               onClick={() => setActiveTab('chat')}
-              className={`flex items-center gap-2 py-3 px-5 text-xs font-sans font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
+              className={`flex items-center gap-2 py-3 px-5 min-h-[44px] text-xs font-sans font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
                 activeTab === 'chat'
                   ? 'bg-crop-600 text-white shadow-sm'
                   : 'text-stone-600 hover:bg-stone-50'
@@ -245,7 +256,7 @@ export default function App() {
             <button
               id="tab-quiz"
               onClick={() => setActiveTab('quiz')}
-              className={`flex items-center gap-2 py-3 px-5 text-xs font-sans font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
+              className={`flex items-center gap-2 py-3 px-5 min-h-[44px] text-xs font-sans font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
                 activeTab === 'quiz'
                   ? 'bg-crop-600 text-white shadow-sm'
                   : 'text-stone-600 hover:bg-stone-50'
@@ -259,7 +270,7 @@ export default function App() {
             <button
               id="tab-map"
               onClick={() => setActiveTab('map')}
-              className={`flex items-center gap-2 py-3 px-5 text-xs font-sans font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
+              className={`flex items-center gap-2 py-3 px-5 min-h-[44px] text-xs font-sans font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
                 activeTab === 'map'
                   ? 'bg-crop-600 text-white shadow-sm'
                   : 'text-stone-600 hover:bg-stone-50'
@@ -273,7 +284,7 @@ export default function App() {
             <button
               id="tab-rag"
               onClick={() => setActiveTab('rag')}
-              className={`flex items-center gap-2 py-3 px-5 text-xs font-sans font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
+              className={`flex items-center gap-2 py-3 px-5 min-h-[44px] text-xs font-sans font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
                 activeTab === 'rag'
                   ? 'bg-crop-600 text-white shadow-sm'
                   : 'text-stone-600 hover:bg-stone-50'
@@ -287,7 +298,7 @@ export default function App() {
             <button
               id="tab-tools"
               onClick={() => setActiveTab('tools')}
-              className={`flex items-center gap-2 py-3 px-5 text-xs font-sans font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
+              className={`flex items-center gap-2 py-3 px-5 min-h-[44px] text-xs font-sans font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
                 activeTab === 'tools'
                   ? 'bg-crop-600 text-white shadow-sm'
                   : 'text-stone-600 hover:bg-stone-50'

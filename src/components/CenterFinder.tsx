@@ -20,6 +20,14 @@ interface CenterFinderProps {
 
 export default function CenterFinder({ language }: CenterFinderProps) {
   const t = TRANSLATIONS[language];
+
+  const pSpacingClass =
+    language === 'te'
+      ? 'leading-[1.95] tracking-[0.035em]'
+      : language === 'ur'
+        ? 'leading-[1.95] tracking-[0.04em]'
+        : 'leading-relaxed';
+
   const [selectedDistrict, setSelectedDistrict] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -155,7 +163,7 @@ export default function CenterFinder({ language }: CenterFinderProps) {
             <Landmark className="w-5 h-5 text-crop-600" />
             {t.nearestTitle}
           </h2>
-          <p className="text-xs text-stone-600 leading-relaxed mb-4">
+          <p className={`text-xs text-stone-600 mb-4 ${pSpacingClass}`}>
             {t.nearestDesc}
           </p>
 
@@ -170,7 +178,9 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                     ? 'جی پی ایس کے ذریعے قریب ترین مرکز تلاش کریں'
                     : 'Find closest Rythu Vedika via GPS'}
               </h3>
-              <p className="text-[10px] text-stone-630 leading-normal font-sans">
+              <p
+                className={`text-[10px] text-stone-630 font-sans ${pSpacingClass}`}
+              >
                 {language === 'te'
                   ? 'మీ మొబైల్ జీపీఎస్ లోకేషన్ ఆధారంగా సమీప కేంద్రాలు స్వయంచాలకంగా కిలోమీటర్ల దూరంతో సహా అమర్చబడతాయి.'
                   : language === 'ur'
@@ -232,7 +242,7 @@ export default function CenterFinder({ language }: CenterFinderProps) {
               <input
                 id="search-input"
                 type="text"
-                className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 pl-9 pr-4 text-xs font-sans focus:outline-none focus:ring-2 focus:ring-crop-600 placeholder-stone-400"
+                className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 pl-9 pr-4 min-h-[44px] text-xs font-sans focus:outline-none focus:ring-2 focus:ring-crop-600 placeholder-stone-400"
                 placeholder="Search center, town, district..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -250,7 +260,7 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                 );
                 if (matches.length > 0) setActiveCenter(matches[0]);
               }}
-              className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 px-3 text-xs font-sans focus:outline-none focus:ring-2 focus:ring-crop-600"
+              className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 px-3 min-h-[44px] text-xs font-sans focus:outline-none focus:ring-2 focus:ring-crop-600"
             >
               <option value="">
                 {t.filterDistrict} ({TELANGANA_DISTRICTS_EN.length})
@@ -267,7 +277,7 @@ export default function CenterFinder({ language }: CenterFinderProps) {
               id="type-filter"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 px-3 text-xs font-sans focus:outline-none focus:ring-2 focus:ring-crop-600"
+              className="w-full bg-stone-50 border border-crop-200 rounded-lg py-2.5 px-3 min-h-[44px] text-xs font-sans focus:outline-none focus:ring-2 focus:ring-crop-600"
             >
               <option value="all">{t.typeAll}</option>
               <option value="KVK">{t.kvkOnly}</option>
@@ -362,7 +372,9 @@ export default function CenterFinder({ language }: CenterFinderProps) {
 
                     <div className="flex items-center gap-1.5 text-xs text-stone-400 mb-2">
                       <MapPin className="w-3.5 h-3.5 shrink-0 text-stone-400" />
-                      <span className="truncate text-[11px] text-stone-550">
+                      <span
+                        className={`truncate text-[11px] text-stone-550 ${pSpacingClass}`}
+                      >
                         {language === 'te'
                           ? center.addressTe
                           : language === 'ur'
@@ -396,7 +408,9 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                   <span className="inline-block text-stone-400 text-4xl mb-2">
                     🌾
                   </span>
-                  <p className="text-xs font-sans text-stone-550 font-medium">
+                  <p
+                    className={`text-xs font-sans text-stone-550 font-medium ${pSpacingClass}`}
+                  >
                     {t.notEligible}
                   </p>
                 </div>
@@ -437,7 +451,9 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                     <MapPin className="w-4 h-4 shrink-0 text-crop-200" />
                     <div>
                       <p className="font-semibold text-white/90">{t.address}</p>
-                      <p className="text-stone-300 text-[11px] leading-relaxed mt-0.5">
+                      <p
+                        className={`text-stone-300 text-[11px] mt-0.5 ${pSpacingClass}`}
+                      >
                         {language === 'te'
                           ? activeCenter.addressTe
                           : language === 'ur'
@@ -500,7 +516,7 @@ export default function CenterFinder({ language }: CenterFinderProps) {
             <div className="relative z-10 grid grid-cols-2 gap-3 pt-6 mt-6 border-t border-crop-800">
               <a
                 href={`tel:${activeCenter.contact}`}
-                className="flex items-center justify-center gap-2 bg-crop-510 hover:bg-crop-510/90 text-crop-900 py-3 px-4 rounded-lg text-xs font-sans font-bold transition-all text-center cursor-pointer"
+                className="flex items-center justify-center gap-2 bg-crop-510 hover:bg-crop-510/90 text-crop-900 py-3 px-4 rounded-lg text-xs font-sans font-bold transition-all text-center cursor-pointer min-h-[44px]"
               >
                 <Phone className="w-4 h-4" />
                 {t.contactFarmer}
@@ -509,7 +525,7 @@ export default function CenterFinder({ language }: CenterFinderProps) {
                 href={`https://www.google.com/maps/dir/?api=1&destination=${activeCenter.latitude},${activeCenter.longitude}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2 bg-crop-800 hover:bg-crop-700 text-white py-3 px-4 rounded-lg text-xs font-sans font-bold transition-all text-center border border-white/10 cursor-pointer"
+                className="flex items-center justify-center gap-2 bg-crop-800 hover:bg-crop-700 text-white py-3 px-4 rounded-lg text-xs font-sans font-bold transition-all text-center border border-white/10 cursor-pointer min-h-[44px]"
               >
                 <Navigation className="w-4 h-4 text-crop-200 animate-pulse" />
                 {t.getDirections}

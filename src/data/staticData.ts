@@ -224,7 +224,8 @@ export const CENTERS: Center[] = [
     districtUr: 'سدی پیٹ',
     addressEn:
       'Pillaripatti Road, near Agricultural Research Station, Siddipet, Telangana 502103',
-    addressTe: 'వ్యవసాయ పరిశోధనా కేంద్రం సమీపంలో, పిల్లారిపట్టి రోడ్, సిద్దిపేట, తెలంగాణ 502103',
+    addressTe:
+      'వ్యవసాయ పరిశోధనా కేంద్రం సమీపంలో, పిల్లారిపట్టి రోడ్, సిద్దిపేట, తెలంగాణ 502103',
     addressUr: 'زرعی ریسرچ اسٹیشن کے قریب، پلاری پٹی روڈ، سدی پیٹ، تلنگانہ',
     latitude: 18.1012,
     longitude: 78.8521,
@@ -302,7 +303,8 @@ export const CENTERS: Center[] = [
     districtUr: 'سدی پیٹ',
     addressEn:
       'Opposite Village Panchayat Building, Kondapak, Siddipet, Telangana 502277',
-    addressTe: 'గ్రామ పంచాయతీ కార్యాలయం ఎదురుగా, కొండపాక, సిద్దిపేట, తెలంగాణ 502277',
+    addressTe:
+      'గ్రామ పంచాయతీ కార్యాలయం ఎదురుగా, కొండపాక, సిద్దిపేట, తెలంగాణ 502277',
     addressUr: 'پنچایت عمارت کے سامنے، کونڈاپاک، سدی پیٹ، تلنگانہ',
     latitude: 18.0215,
     longitude: 78.8912,
@@ -341,7 +343,8 @@ export const CENTERS: Center[] = [
     districtUr: 'نظام آباد',
     addressEn:
       'Armoor Outer Bypass Cross Road, Nizamabad High Road, Telangana 503224',
-    addressTe: 'ఆర్మూర్ ఔటర్ బైపాస్ రోడ్ కూడలి, నిజామాబాద్ హై రోడ్, తెలంగాణ 503224',
+    addressTe:
+      'ఆర్మూర్ ఔటర్ బైపాస్ రోడ్ కూడలి, నిజామాబాద్ హై రోడ్, తెలంగాణ 503224',
     addressUr: 'بائی پاس کراس روڈ، نظام آباد، تلنگانہ',
     latitude: 18.7904,
     longitude: 78.2831,
@@ -361,7 +364,8 @@ export const CENTERS: Center[] = [
     districtUr: 'کھمم',
     addressEn:
       'Sujatha Nagar Road, Nelakondapally Mandal, Khammam District, Telangana 507160',
-    addressTe: 'సుజాతానగర్ రోడ్, నేలకొండపల్లి మండలం, ఖమ్మం జిల్లా, తెలంగాణ 507160',
+    addressTe:
+      'సుజాతానగర్ రోడ్, నేలకొండపల్లి మండలం, ఖమ్మం జిల్లా, తెలంగాణ 507160',
     addressUr: 'سوجاتا نگر روڈ، نیلاکنڈاپلی، تلنگانہ',
     latitude: 17.1124,
     longitude: 79.9248,
@@ -381,7 +385,8 @@ export const CENTERS: Center[] = [
     districtUr: 'کریم نگر',
     addressEn:
       'Vemulawada Main Road, near AMC market, Choppadandi, Telangana 505415',
-    addressTe: 'వేములవాడ మెయిన్ రోడ్, మార్కెట్ యార్డ్ సమీపంలో, చొప్పదండి, తెలంగాణ 505415',
+    addressTe:
+      'వేములవాడ మెయిన్ రోడ్, మార్కెట్ యార్డ్ సమీపంలో, చొప్పదండి, తెలంగాణ 505415',
     addressUr: 'ویمولواڑہ روڈ، چوپادنڈی، کریم نگر، تلنگانہ',
     latitude: 18.5724,
     longitude: 79.1123,

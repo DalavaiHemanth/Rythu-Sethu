@@ -35,6 +35,13 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
   const [selectedWeatherDistrict, setSelectedWeatherDistrict] =
     useState<string>('Nalgonda');
 
+  const pSpacingClass =
+    language === 'te'
+      ? 'leading-[1.95] tracking-[0.035em]'
+      : language === 'ur'
+        ? 'leading-[1.95] tracking-[0.04em]'
+        : 'leading-relaxed';
+
   // NPK Fertilizer Form State
   const [crop, setCrop] = useState<'paddy' | 'cotton' | 'chilli' | 'maize'>(
     'paddy'
@@ -97,7 +104,8 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
       cropType: 'పంట రకాన్ని ఎంచుకోండి',
       landAcres: 'సాగు భూమి పరిమాణం (ఎకరాలు)',
       currentSeason: 'వ్యవసాయ కాలం',
-      calculatedBags: 'సిఫార్సు చేయబడిన మొత్తం ఎరువుల బస్తాల లెక్కింపు (45 - 50 కిలోల బస్తా)',
+      calculatedBags:
+        'సిఫార్సు చేయబడిన మొత్తం ఎరువుల బస్తాల లెక్కింపు (45 - 50 కిలోల బస్తా)',
       urea: 'యూరియా బస్తాలు (నత్రజని మూలం)',
       dap: 'DAP బస్తాలు (భాస్వరం మూలం)',
       mop: 'పొటాష్ MOP బస్తాలు (పొటాషియం స్థావరం)',
@@ -282,7 +290,9 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
           <h2 className="text-xl font-display font-black text-crop-900 tracking-tight">
             {currentTl.title}
           </h2>
-          <p className="text-xs text-stone-600 mt-1 leading-relaxed max-w-xl">
+          <p
+            className={`text-xs text-stone-600 mt-1 max-w-xl ${pSpacingClass}`}
+          >
             {currentTl.subtitle}
           </p>
         </div>
@@ -291,7 +301,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
         <div className="flex rounded-lg p-0.5 bg-stone-100 border border-stone-200 shrink-0 self-start md:self-center overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveSubTab('npk')}
-            className={`px-3 py-1.5 rounded text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-1.5 min-h-[44px] flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeSubTab === 'npk'
                 ? 'bg-crop-600 text-white shadow-3xs'
                 : 'text-stone-600 hover:text-stone-900'
@@ -305,7 +315,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
           </button>
           <button
             onClick={() => setActiveSubTab('shc')}
-            className={`px-3 py-1.5 rounded text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-1.5 min-h-[44px] flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeSubTab === 'shc'
                 ? 'bg-crop-600 text-white shadow-3xs'
                 : 'text-stone-600 hover:text-stone-900'
@@ -319,7 +329,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
           </button>
           <button
             onClick={() => setActiveSubTab('mandi')}
-            className={`px-3 py-1.5 rounded text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-1.5 min-h-[44px] flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeSubTab === 'mandi'
                 ? 'bg-crop-600 text-white shadow-3xs'
                 : 'text-stone-600 hover:text-stone-900'
@@ -333,7 +343,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
           </button>
           <button
             onClick={() => setActiveSubTab('weather')}
-            className={`px-3 py-1.5 rounded text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-1.5 min-h-[44px] flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeSubTab === 'weather'
                 ? 'bg-crop-600 text-white shadow-3xs'
                 : 'text-stone-600 hover:text-stone-900'
@@ -347,7 +357,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
           </button>
           <button
             onClick={() => setActiveSubTab('helpline')}
-            className={`px-3 py-1.5 rounded text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-1.5 min-h-[44px] flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeSubTab === 'helpline'
                 ? 'bg-crop-600 text-white shadow-3xs'
                 : 'text-stone-600 hover:text-stone-900'
@@ -397,7 +407,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                   <button
                     key={item.id}
                     onClick={() => setCrop(item.id as any)}
-                    className={`py-2 px-3 border rounded text-xs font-sans font-bold text-center cursor-pointer transition-all ${
+                    className={`py-2 px-3 min-h-[44px] flex items-center justify-center border rounded text-xs font-sans font-bold text-center cursor-pointer transition-all ${
                       crop === item.id
                         ? 'bg-crop-50 border-crop-600 text-crop-900 shadow-3xs'
                         : 'border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700'
@@ -443,7 +453,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setSeason('kharif')}
-                  className={`py-2 px-3 border rounded text-xs font-sans font-semibold text-center cursor-pointer transition-all ${
+                  className={`py-2 px-3 min-h-[44px] flex items-center justify-center border rounded text-xs font-sans font-semibold text-center cursor-pointer transition-all ${
                     season === 'kharif'
                       ? 'bg-crop-50 border-crop-600 text-crop-900 font-bold'
                       : 'border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-600'
@@ -453,7 +463,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                 </button>
                 <button
                   onClick={() => setSeason('rabi')}
-                  className={`py-2 px-3 border rounded text-xs font-sans font-semibold text-center cursor-pointer transition-all ${
+                  className={`py-2 px-3 min-h-[44px] flex items-center justify-center border rounded text-xs font-sans font-semibold text-center cursor-pointer transition-all ${
                     season === 'rabi'
                       ? 'bg-crop-50 border-crop-600 text-crop-900 font-bold'
                       : 'border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-600'
@@ -471,7 +481,9 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
               <h3 className="text-xs font-mono font-medium tracking-widest text-crop-200 uppercase bg-crop-950/40 px-3 py-1 rounded-full border border-crop-700/20 inline-block">
                 🔢 Calculated Recommended Dosages
               </h3>
-              <p className="text-xs text-stone-200 font-medium leading-relaxed mt-2">
+              <p
+                className={`text-xs text-stone-200 font-medium mt-2 ${pSpacingClass}`}
+              >
                 {currentTl.calculatedBags}
               </p>
 
@@ -504,9 +516,9 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
               </div>
 
               {/* Extra notice */}
-              <div className="mt-4 flex items-start gap-2 text-[10px] leading-relaxed text-crop-100 bg-crop-950/30 p-2.5 rounded border border-crop-800/40">
+              <div className="mt-4 flex items-start gap-2 text-[10px] text-crop-100 bg-crop-950/30 p-2.5 rounded border border-crop-800/40">
                 <Info className="w-4 h-4 shrink-0 text-crop-300" />
-                <p>
+                <p className={pSpacingClass}>
                   {language === 'te'
                     ? 'గమనిక: ఈ లెక్క PJTSAU విశ్వవిద్యాలయం అందించిన ప్రమాణాల ఆధారంగా సృష్టించబడింది. మీ నేల సారాన్ని బట్టి మార్పుల కోసం స్థానిక AEO అధికారిని రైతు వేదిక లో సంప్రదించండి.'
                     : 'The dosage recommendation represents standardized university guidelines. Verify soil health reports block-wise to tailor actual micronutrient needs.'}
@@ -525,7 +537,9 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                 <div className="relative">
                   <span className="absolute -left-[20.5px] top-1 w-3 h-3 rounded-full bg-crop-600 outline-4 outline-white block" />
                   <p className="font-bold text-stone-850">{currentTl.stage1}</p>
-                  <p className="text-[11px] text-stone-500 leading-relaxed mt-0.5">
+                  <p
+                    className={`text-[11px] text-stone-500 mt-0.5 ${pSpacingClass}`}
+                  >
                     {language === 'te'
                       ? `మొత్తం DAP బస్తాల (${advice.dap} బస్తాలు) మరియు పొటాష్ సగం మోతాదు నాటే ముందే వేయాలి. దీని ద్వారా వేళ్లు గట్టిపడతాయి.`
                       : `Apply 100% of DAP crop bags (${advice.dap} bags) and 50% of Potash bags as base dressing before transplantation.`}
@@ -536,7 +550,9 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                 <div className="relative">
                   <span className="absolute -left-[20.5px] top-1 w-3 h-3 rounded-full bg-crop-500 outline-4 outline-white block" />
                   <p className="font-bold text-stone-850">{currentTl.stage2}</p>
-                  <p className="text-[11px] text-stone-500 leading-relaxed mt-0.5">
+                  <p
+                    className={`text-[11px] text-stone-500 mt-0.5 ${pSpacingClass}`}
+                  >
                     {language === 'te'
                       ? `మొత్తం యూరియాలో సగం మోతాదు (${Math.round(advice.urea * 0.5 * 10) / 10} బస్తాలు) వేయడం ద్వారా పిలకలు వేగంగా వస్తాయి.`
                       : `Broadcast 50% of calculated Urea (${Math.round(advice.urea * 0.5 * 10) / 10} bags) directly as first top-dressing during tillering.`}
@@ -547,7 +563,9 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                 <div className="relative">
                   <span className="absolute -left-[20.5px] top-1 w-3 h-3 rounded-full bg-crop-400 outline-4 outline-white block" />
                   <p className="font-bold text-stone-850">{currentTl.stage3}</p>
-                  <p className="text-[11px] text-stone-500 leading-relaxed mt-0.5">
+                  <p
+                    className={`text-[11px] text-stone-500 mt-0.5 ${pSpacingClass}`}
+                  >
                     {language === 'te'
                       ? `మిగిలిన యూరియా మోతాదు మరియు సగం పొటాష్ వేయండి. దీని ద్వారా గింజ గట్టిపడటం మరియు పంట దిగుబడి పెరుగుతుంది.`
                       : `Broadcast the remaining Urea and Potash bags split-wise to boost grain weight and boll strength.`}
@@ -568,7 +586,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
               <TrendingUp className="w-5 h-5 text-crop-600" />
               {currentTl.mandiTitle}
             </h3>
-            <p className="text-xs text-stone-600 leading-relaxed">
+            <p className={`text-xs text-stone-600 ${pSpacingClass}`}>
               {currentTl.mandiDesc}
             </p>
           </div>
@@ -618,7 +636,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
 
           <div className="p-3.5 bg-crop-50/40 border border-crop-100 rounded-lg text-stone-600 text-xs flex gap-2.5 items-center">
             <span className="text-base text-crop-600">🔔</span>
-            <p className="leading-relaxed">
+            <p className={pSpacingClass}>
               {language === 'te'
                 ? 'సేకరణ నిబంధన: గ్రేడ్ A వరి కనీస సగటు గుణకం తడి 17% కంటే తక్కువగా ఉండాలి. అమ్మకం పూర్తి కొరకు సమీప పీఏసీఎస్ కేంద్రాన్ని విచారించండి.'
                 : 'Note: Wet grain moisture content must remain below 17% to qualify for state-managed collection MSP rate buffers.'}
@@ -634,7 +652,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
               <PhoneCall className="w-5.5 h-5.5 text-crop-600" />
               {currentTl.helplineTitle}
             </h3>
-            <p className="text-xs text-stone-600 leading-relaxed">
+            <p className={`text-xs text-stone-600 ${pSpacingClass}`}>
               {currentTl.helplineDesc}
             </p>
           </div>
@@ -652,7 +670,9 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                   <h4 className="text-sm font-semibold text-stone-850 leading-tight">
                     {item.title}
                   </h4>
-                  <p className="text-[11px] text-stone-600 leading-relaxed font-medium">
+                  <p
+                    className={`text-[11px] text-stone-600 font-medium ${pSpacingClass}`}
+                  >
                     {item.desc}
                   </p>
                 </div>
@@ -663,7 +683,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                   </span>
                   <a
                     href={`tel:${item.number.replace(/-/g, '')}`}
-                    className="px-3 py-1 bg-crop-600 hover:bg-crop-700 active:bg-crop-800 text-white rounded text-[10px] font-sans font-black flex items-center gap-1 transition-colors tracking-wider uppercase"
+                    className="px-3 py-1 min-h-[44px] flex items-center justify-center bg-crop-600 hover:bg-crop-700 active:bg-crop-800 text-white rounded text-[10px] font-sans font-black gap-1 transition-colors tracking-wider uppercase"
                   >
                     📞 Call Now
                   </a>
@@ -688,7 +708,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                       ? 'ضلعی زرعی موسم کی پیش گوئی'
                       : 'District Agro-Weather Forecast'}
                 </h3>
-                <p className="text-xs text-stone-600 leading-relaxed mt-0.5">
+                <p className={`text-xs text-stone-600 mt-0.5 ${pSpacingClass}`}>
                   {language === 'te'
                     ? 'తెలంగాణ జిల్లాల ఆధారిత మైక్రో-క్లైమేట్ అంచనాలు మరియు వ్యవసాయ చిట్కాలు.'
                     : language === 'ur'
@@ -709,7 +729,7 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                 <select
                   value={selectedWeatherDistrict}
                   onChange={(e) => setSelectedWeatherDistrict(e.target.value)}
-                  className="w-full bg-stone-50 hover:bg-stone-100 border border-stone-200 text-xs font-bold text-stone-850 px-3.5 py-2.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-crop-500 cursor-pointer transition-colors"
+                  className="w-full bg-stone-50 hover:bg-stone-100 border border-stone-200 text-xs font-bold text-stone-850 px-3.5 py-2.5 min-h-[44px] rounded-lg focus:outline-none focus:ring-1 focus:ring-crop-500 cursor-pointer transition-colors"
                 >
                   {TELANGANA_DISTRICTS_EN.map((dist) => (
                     <option key={dist} value={dist}>
@@ -934,7 +954,9 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
               <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-yellow-300">
                 🎓 PJTSAU Smart Advisor System (వాతావరణ సిఫార్సులు / مشورہ)
               </h4>
-              <p className="text-xs font-sans leading-relaxed tracking-wide font-medium">
+              <p
+                className={`text-xs font-sans tracking-wide font-medium ${pSpacingClass}`}
+              >
                 {language === 'te'
                   ? weather.advisoryTe
                   : language === 'ur'
@@ -974,14 +996,14 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                   >
                     {language === 'te' ? (
                       <div>
-                        • <strong>మురుగు నీరు విడుదల:</strong> కురిసిన భారీ వర్షపు నీరు
-                        పొలంలో నిల్వ ఉండి వేర్లు కుళ్ళిపోకుండా మురుగు కాలువలను వెంటనే శుభ్రం
-                        చేసుకోండి.
-                        <br />• <strong>కోతల నిలిపివేత:</strong> కోతకు సిద్ధంగా ఉన్న పంటను
-                        తక్షణమే కోయడం వాయిదా వేయండి; ముందే కోసిన ధాన్యాలను సురక్షిత గోదాములకు
-                        చేర్చండి.
-                        <br />• <strong>కెమికల్ స్ప్రేలు:</strong> మందులు మరియు ఎరువుల
-                        పిచికారీని కనీసం 48 గంటల పాటు నిలిపివేయండి.
+                        • <strong>మురుగు నీరు విడుదల:</strong> కురిసిన భారీ
+                        వర్షపు నీరు పొలంలో నిల్వ ఉండి వేర్లు కుళ్ళిపోకుండా
+                        మురుగు కాలువలను వెంటనే శుభ్రం చేసుకోండి.
+                        <br />• <strong>కోతల నిలిపివేత:</strong> కోతకు సిద్ధంగా
+                        ఉన్న పంటను తక్షణమే కోయడం వాయిదా వేయండి; ముందే కోసిన
+                        ధాన్యాలను సురక్షిత గోదాములకు చేర్చండి.
+                        <br />• <strong>కెమికల్ స్ప్రేలు:</strong> మందులు మరియు
+                        ఎరువుల పిచికారీని కనీసం 48 గంటల పాటు నిలిపివేయండి.
                       </div>
                     ) : language === 'ur' ? (
                       <div>
@@ -1019,13 +1041,15 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                   >
                     {language === 'te' ? (
                       <div>
-                        • <strong>సాయంకాల తడులు:</strong> ఉష్ణోగ్రతలు ఎక్కువగా ఉన్నందున,
-                        ఆవిరి నష్టాన్ని తగ్గించడానికి కేవలం సాయంత్రం లేదా ఉదయం వేళల్లోనే పొలాలకు నీరు
-                        పెట్టండి.
-                        <br />• <strong>నేల తేమ పరిరక్షణ:</strong> నేలలో తేమను నిలబెట్టడానికి
-                        ఎండిన ఆకులు లేదా వరి పొట్టుతో నేలను కప్పి ఉంచడం (మల్చింగ్) మంచిది.
-                        <br />• <strong>ఆకుమచ్చ రక్షణ:</strong> తీవ్ర ఎండకు ఆకులు
-                        వాడిపోకుండా ముందస్తుగా నిరోధక నీటి పిచికారీ పద్ధతులు పాటించండి.
+                        • <strong>సాయంకాల తడులు:</strong> ఉష్ణోగ్రతలు ఎక్కువగా
+                        ఉన్నందున, ఆవిరి నష్టాన్ని తగ్గించడానికి కేవలం సాయంత్రం
+                        లేదా ఉదయం వేళల్లోనే పొలాలకు నీరు పెట్టండి.
+                        <br />• <strong>నేల తేమ పరిరక్షణ:</strong> నేలలో తేమను
+                        నిలబెట్టడానికి ఎండిన ఆకులు లేదా వరి పొట్టుతో నేలను కప్పి
+                        ఉంచడం (మల్చింగ్) మంచిది.
+                        <br />• <strong>ఆకుమచ్చ రక్షణ:</strong> తీవ్ర ఎండకు
+                        ఆకులు వాడిపోకుండా ముందస్తుగా నిరోధక నీటి పిచికారీ
+                        పద్ధతులు పాటించండి.
                       </div>
                     ) : language === 'ur' ? (
                       <div>
@@ -1066,14 +1090,15 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                   >
                     {language === 'te' ? (
                       <div>
-                        • <strong>తెగుళ్ళ ముప్పు:</strong> గాలిలో అధిక తడి తనం వల్ల వరిలో
-                        ఉల్లికోడు, అగ్గి తెగులు మరియు కాండం తొలుచు పురుగు వ్యాపించే అవకాశం
-                        ఉంది.
-                        <br />• <strong>వేప నూనె వాడకం:</strong> ప్రాథమిక దశలో ఎకరానికి 5%
-                        వేప గింజల కషాయాన్ని పిచికారీ చేయడం వల్ల పురుగుల ఉధృతిని సులభంగా
-                        అరికట్టవచ్చు.
-                        <br />• <strong>పొలం పర్యవేక్షణ:</strong> ప్రతి రోజు ఉదయం పొలాన్ని
-                        గమనిస్తూ ఆకుల వెనుక భాగంలో తెల్లటి మచ్చలను త్వరగా గుర్తించండి.
+                        • <strong>తెగుళ్ళ ముప్పు:</strong> గాలిలో అధిక తడి తనం
+                        వల్ల వరిలో ఉల్లికోడు, అగ్గి తెగులు మరియు కాండం తొలుచు
+                        పురుగు వ్యాపించే అవకాశం ఉంది.
+                        <br />• <strong>వేప నూనె వాడకం:</strong> ప్రాథమిక దశలో
+                        ఎకరానికి 5% వేప గింజల కషాయాన్ని పిచికారీ చేయడం వల్ల
+                        పురుగుల ఉధృతిని సులభంగా అరికట్టవచ్చు.
+                        <br />• <strong>పొలం పర్యవేక్షణ:</strong> ప్రతి రోజు
+                        ఉదయం పొలాన్ని గమనిస్తూ ఆకుల వెనుక భాగంలో తెల్లటి మచ్చలను
+                        త్వరగా గుర్తించండి.
                       </div>
                     ) : language === 'ur' ? (
                       <div>
@@ -1114,13 +1139,14 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                   >
                     {language === 'te' ? (
                       <div>
-                        • <strong>మొక్కలకు మద్దతు:</strong> చెరకు, మొక్కజొన్న మరియు అరటి
-                        తోటలు ఉధృత గాలులకు పడిపోకుండా బలంగా ఊతాలు (స్టేకింగ్) అమర్చండి.
-                        <br />• <strong>స్ప్రేయింగ్ నివారించండి:</strong> గాలి వేగం 14 కిమీ
-                        దాటిన సందర్భంలో పిచికారీ ద్రావణ కణాలు గాలి వాలుకు కొట్టుకుపోయి వృథా అవుతాయి,
-                        కాబట్టి నిలిపివేయండి.
-                        <br />• <strong>ఎరువుల ముగింపు:</strong> పొడి లేదా పొడి గుళికల
-                        ఎరువులను ఈదురు గాలుల్లో పొలంలో చల్లవద్దు.
+                        • <strong>మొక్కలకు మద్దతు:</strong> చెరకు, మొక్కజొన్న
+                        మరియు అరటి తోటలు ఉధృత గాలులకు పడిపోకుండా బలంగా ఊతాలు
+                        (స్టేకింగ్) అమర్చండి.
+                        <br />• <strong>స్ప్రేయింగ్ నివారించండి:</strong> గాలి
+                        వేగం 14 కిమీ దాటిన సందర్భంలో పిచికారీ ద్రావణ కణాలు గాలి
+                        వాలుకు కొట్టుకుపోయి వృథా అవుతాయి, కాబట్టి నిలిపివేయండి.
+                        <br />• <strong>ఎరువుల ముగింపు:</strong> పొడి లేదా పొడి
+                        గుళికల ఎరువులను ఈదురు గాలుల్లో పొలంలో చల్లవద్దు.
                       </div>
                     ) : language === 'ur' ? (
                       <div>
@@ -1164,13 +1190,15 @@ export default function FarmerTools({ language }: FarmerToolsProps) {
                     >
                       {language === 'te' ? (
                         <div>
-                          • <strong>ఉత్తమ పిచికారీ సమయం:</strong> ప్రశాంతమైన వాతావరణం
-                          ఉన్నందున ఈ రోజు ఎరువులు చల్లడానికి లేదా తెగుళ్ల మందులు పిచికారీ
-                          చేయడానికి చాలా అనుకూలమైన రోజని PJTSAU శాస్త్రవేత్తలు సూచిస్తున్నారు.
-                          <br />• <strong>నీటి నిర్వహణ:</strong> పంటలకు సాధారణ నాలుగు
-                          రోజుల తడుల చక్ర పద్ధతిని కొనసాగించండి.
-                          <br />• <strong>సేంద్రీయ పోషణ:</strong> ఈ సమయంలో పంటకు పోషకాల
-                          సాంద్రతను పెంచేందుకు జీవ ముద్ద ఎరువులను వాడవచ్చు.
+                          • <strong>ఉత్తమ పిచికారీ సమయం:</strong> ప్రశాంతమైన
+                          వాతావరణం ఉన్నందున ఈ రోజు ఎరువులు చల్లడానికి లేదా
+                          తెగుళ్ల మందులు పిచికారీ చేయడానికి చాలా అనుకూలమైన రోజని
+                          PJTSAU శాస్త్రవేత్తలు సూచిస్తున్నారు.
+                          <br />• <strong>నీటి నిర్వహణ:</strong> పంటలకు సాధారణ
+                          నాలుగు రోజుల తడుల చక్ర పద్ధతిని కొనసాగించండి.
+                          <br />• <strong>సేంద్రీయ పోషణ:</strong> ఈ సమయంలో పంటకు
+                          పోషకాల సాంద్రతను పెంచేందుకు జీవ ముద్ద ఎరువులను
+                          వాడవచ్చు.
                         </div>
                       ) : language === 'ur' ? (
                         <div>

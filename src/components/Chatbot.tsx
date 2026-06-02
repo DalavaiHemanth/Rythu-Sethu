@@ -401,7 +401,7 @@ export default function Chatbot({
                 <button
                   key={index}
                   onClick={() => handlePresetClick(qText)}
-                  className={`w-full text-left bg-stone-50 hover:bg-crop-50 hover:text-crop-900 hover:border-crop-200 p-2.5 rounded-lg border border-earth-100 transition-all leading-snug font-medium cursor-pointer ${
+                  className={`w-full text-left bg-stone-50 hover:bg-crop-50 hover:text-crop-900 hover:border-crop-200 p-2.5 min-h-[44px] flex items-center justify-start rounded-lg border border-earth-100 transition-all leading-snug font-medium cursor-pointer ${
                     language === 'te'
                       ? 'text-[12.5px] font-telugu'
                       : 'text-[11px] font-sans'
@@ -514,7 +514,7 @@ export default function Chatbot({
                 <button
                   key={sz}
                   onClick={() => setTextSize(sz)}
-                  className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase transition-all tracking-wider cursor-pointer ${
+                  className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase transition-all tracking-wider cursor-pointer min-h-[44px] flex items-center justify-center ${
                     textSize === sz
                       ? 'bg-crop-600 text-white shadow-3xs font-extrabold'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-stone-300/30'
@@ -599,7 +599,7 @@ export default function Chatbot({
                               onClick={() =>
                                 speakText(msg.content, msg.language)
                               }
-                              className="p-1.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-600 hover:text-emerald-800 transition-all cursor-pointer shadow-3xs"
+                              className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-600 hover:text-emerald-800 transition-all cursor-pointer shadow-3xs"
                               title="Speak advice aloud"
                             >
                               <Volume2 className="w-3.5 h-3.5" />
@@ -608,7 +608,7 @@ export default function Chatbot({
                               onClick={() =>
                                 handleCopyText(msg.content, msg.id)
                               }
-                              className="p-1.5 rounded-md bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-400 hover:text-crop-800 transition-all cursor-pointer shadow-3xs"
+                              className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-400 hover:text-crop-800 transition-all cursor-pointer shadow-3xs"
                               title="Copy advice text"
                             >
                               {copiedId === msg.id ? (
@@ -749,7 +749,7 @@ export default function Chatbot({
             <button
               id="btn-voice-mic"
               onClick={handleMicPress}
-              className={`p-3 relative rounded-lg flex items-center justify-center transition-all border shrink-0 cursor-pointer ${
+              className={`p-3 relative rounded-lg flex items-center justify-center transition-all border shrink-0 cursor-pointer min-h-[44px] min-w-[44px] ${
                 isListening
                   ? 'bg-red-550 text-white border-red-600 shadow-md scale-115'
                   : 'bg-stone-100 hover:bg-stone-250 border-stone-200 text-stone-700'
@@ -766,7 +766,7 @@ export default function Chatbot({
             <button
               id="btn-upload-leaf-photo"
               onClick={() => fileInputRef.current?.click()}
-              className="p-3 bg-stone-100 hover:bg-stone-150 border border-stone-200 rounded-lg flex items-center justify-center shrink-0 transition-transform cursor-pointer"
+              className="p-3 bg-stone-100 hover:bg-stone-150 border border-stone-200 rounded-lg flex items-center justify-center shrink-0 transition-transform cursor-pointer min-h-[44px] min-w-[44px]"
               title="Upload leaf photo for visual diagnostic"
             >
               <Camera className="w-5 h-5 text-stone-600" />
@@ -783,7 +783,7 @@ export default function Chatbot({
             <input
               id="chat-text-input"
               type="text"
-              className="flex-1 bg-white border border-earth-100 rounded-lg py-3 px-4 text-xs font-sans focus:outline-none focus:ring-2 focus:ring-crop-600 focus:border-crop-700 shadow-2xs leading-relaxed"
+              className="flex-1 bg-white border border-earth-100 rounded-lg py-3 px-4 text-xs font-sans focus:outline-none focus:ring-2 focus:ring-crop-600 focus:border-crop-700 shadow-2xs leading-relaxed min-h-[44px]"
               placeholder={t.typePlaceholder}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -798,7 +798,7 @@ export default function Chatbot({
               id="btn-send-message"
               onClick={() => handleSendMessage()}
               disabled={isLoading || isListening || (!input.trim() && !image)}
-              className="p-3 bg-crop-600 hover:bg-crop-700 active:bg-crop-800 disabled:bg-stone-100 disabled:text-stone-400 text-white rounded-lg transition-all shadow-sm shrink-0 font-bold border-b-2 border-crop-800 cursor-pointer"
+              className="p-3 bg-crop-600 hover:bg-crop-700 active:bg-crop-800 disabled:bg-stone-100 disabled:text-stone-400 text-white rounded-lg transition-all shadow-sm shrink-0 font-bold border-b-2 border-crop-800 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               <Send className="w-4 h-4" />
             </button>
@@ -995,7 +995,7 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
               >
                 •
               </span>
-              <div className="flex-1 leading-relaxed">
+              <div className="flex-1 leading-inherit">
                 {renderInlineStyles(cleanText)}
               </div>
             </div>
@@ -1017,7 +1017,7 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
               >
                 {num}
               </span>
-              <div className="flex-1 leading-relaxed">
+              <div className="flex-1 leading-inherit">
                 {renderInlineStyles(cleanText)}
               </div>
             </div>
@@ -1026,7 +1026,7 @@ function RichText({ content, language, textSize, isUser }: RichTextProps) {
 
         // 5. Default paragraph
         return (
-          <p key={idx} className="leading-relaxed whitespace-pre-wrap">
+          <p key={idx} className="leading-inherit whitespace-pre-wrap">
             {renderInlineStyles(line)}
           </p>
         );
