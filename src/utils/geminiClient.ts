@@ -1,5 +1,5 @@
-import { SCHEMES, CENTERS } from '../data/staticData';
-import { UploadedDoc, Message } from '../types';
+import { CENTERS, SCHEMES } from '../data/staticData';
+import { Message, UploadedDoc } from '../types';
 
 // Default static documents in case local storage is empty
 const DEFAULT_DOCUMENTS: UploadedDoc[] = [

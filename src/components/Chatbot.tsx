@@ -21,11 +21,11 @@ import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { Message } from '../types';
 import { API_BASE } from '../utils/agriHelpers';
 import {
+  clearGeminiApiKey,
   generateChatResponse,
   getDocuments,
   getGeminiApiKey,
   setGeminiApiKey,
-  clearGeminiApiKey,
 } from '../utils/geminiClient';
 
 interface ChatbotProps {

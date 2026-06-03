@@ -17,9 +17,9 @@ import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { UploadedDoc } from '../types';
 import { API_BASE } from '../utils/agriHelpers';
 import {
+  deleteDocument,
   getDocuments,
   uploadDocument,
-  deleteDocument,
 } from '../utils/geminiClient';
 
 interface KnowledgeBaseProps {
