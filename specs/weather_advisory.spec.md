@@ -25,8 +25,8 @@ The Agro-Weather Outlook Engine provides localized weather forecasts and crop ma
   - Generates a 3-day forecast progression.
 
 ## 4. Localization & Spacing
--Muted condition text and advisory scripts in English, Telugu, and Urdu.
--Spacing rules strictly apply (Telugu `leading-[1.95] tracking-[0.035em]`, Urdu `leading-[1.95] tracking-[0.04em]`).
+- Muted condition text and advisory scripts in English, Telugu, and Urdu.
+- Spacing rules strictly apply (Telugu `leading-[1.95] tracking-[0.035em]`, Urdu `leading-[1.95] tracking-[0.04em]`).
 
 ## 5. Accessibility & Responsive Targets
 - District selector dropdown must have a touch height of at least 44px.
