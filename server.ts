@@ -12,6 +12,21 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
+// CORS Middleware to allow requests from GitLab Pages frontend
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, DELETE, OPTIONS'
+  );
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 app.use(express.json({ limit: '15mb' })); // Support larger leaf photos
 
 // In-memory document storage for the farmer/officer GO uploads (RAG context)
@@ -19,17 +34,19 @@ let uploadedDocuments: UploadedDoc[] = [
   {
     id: 'go_1',
     title: 'Telangana Rythu Bharosa Operational Guidelines 2026',
-    content: 'AGRICULTURE & COOPERATION DEPARTMENT - Rythu Bharosa scheme is improved to provide input subsidy support of Rs. 15,000 per acre per year (divided equally in two terms: Rs. 7,500 for Kharif and Rs. 7,500 for Rabi). Landowners registered under the Pattadar database of the Dharani Portal are fully covered. Tenancy systems are audited by village secretaries for additional support. Funds will be directly disbursed through DBT into Bank accounts linked with Aadhaar cards.',
+    content:
+      'AGRICULTURE & COOPERATION DEPARTMENT - Rythu Bharosa scheme is improved to provide input subsidy support of Rs. 15,000 per acre per year (divided equally in two terms: Rs. 7,500 for Kharif and Rs. 7,500 for Rabi). Landowners registered under the Pattadar database of the Dharani Portal are fully covered. Tenancy systems are audited by village secretaries for additional support. Funds will be directly disbursed through DBT into Bank accounts linked with Aadhaar cards.',
     uploadDate: '2026-04-12T10:00:00Z',
-    charCount: 428
+    charCount: 428,
   },
   {
     id: 'go_2',
     title: 'Government Circular on Paddy Crop Pests & Zinc Deficiencies',
-    content: 'AGRI ADVISORY PANEL TELANGANA: Recent heavy clay soil settings in Nizamabad, Siddipet, and Suryapet have shown widespread iron and zinc deficiencies in Paddy crop (leaves turning pale yellow or bronze, growth retardation, especially between 40-70 days of transplantation). Farmers are advised to spray Zinc Sulphate (Chelated Zn) at 2g per liter of water. Ensure proper drainage. Subsidies for micro-nutrients are registered under local Rythu Vedikas.',
+    content:
+      'AGRI ADVISORY PANEL TELANGANA: Recent heavy clay soil settings in Nizamabad, Siddipet, and Suryapet have shown widespread iron and zinc deficiencies in Paddy crop (leaves turning pale yellow or bronze, growth retardation, especially between 40-70 days of transplantation). Farmers are advised to spray Zinc Sulphate (Chelated Zn) at 2g per liter of water. Ensure proper drainage. Subsidies for micro-nutrients are registered under local Rythu Vedikas.',
     uploadDate: '2026-05-18T14:30:00Z',
-    charCount: 412
-  }
+    charCount: 412,
+  },
 ];
 
 // Lazy-initialized Gemini Client
@@ -39,7 +56,9 @@ function getGeminiClient(): GoogleGenAI {
   if (!geminiClient) {
     const key = process.env.GEMINI_API_KEY;
     if (!key) {
-      throw new Error('GEMINI_API_KEY environment variable is not defined pin. Please configure it in your Secrets Panel.');
+      throw new Error(
+        'GEMINI_API_KEY environment variable is not defined pin. Please configure it in your Secrets Panel.'
+      );
     }
     geminiClient = new GoogleGenAI({
       apiKey: key,
@@ -86,7 +105,7 @@ app.post('/api/documents/upload', (req, res) => {
     title,
     content,
     uploadDate: new Date().toISOString(),
-    charCount: content.length
+    charCount: content.length,
   };
   uploadedDocuments.push(newDoc);
   res.status(201).json(newDoc);
@@ -101,7 +120,12 @@ app.delete('/api/documents/:id', (req, res) => {
 // 2. Chatbot response generation (multi-lingual and multi-modal)
 app.post('/api/chat', async (req, res) => {
   try {
-    const { messages, quizAnswers, locationInfo, language = 'en' } = req.body as {
+    const {
+      messages,
+      quizAnswers,
+      locationInfo,
+      language = 'en',
+    } = req.body as {
       messages: Message[];
       quizAnswers?: Record<string, boolean>;
       locationInfo?: { district?: string; type?: string };
@@ -133,7 +157,7 @@ Rythu Vedika & Krishi Vigyan Kendras (KVKs) centers in Telangana:
 ${JSON.stringify(CENTERS, null, 2)}
 
 Additional Context from Government Orders (GOs) and Policy Circulars (RAG):
-${uploadedDocuments.map(d => `Document: "${d.title}" - Uploaded ${d.uploadDate}:\n${d.content}`).join('\n\n')}
+${uploadedDocuments.map((d) => `Document: "${d.title}" - Uploaded ${d.uploadDate}:\n${d.content}`).join('\n\n')}
 
 Current Farmer's Profile (if known from the eligibility quiz):
 ${quizAnswers ? `Quiz results: Resident of Telangana? ${quizAnswers.isResident ? 'YES' : 'NO'}. Landowner/Pattadar? ${quizAnswers.isLandowner ? 'YES' : 'NO'}. Small & Marginal Farmer (Owns <= 5 acres)? ${quizAnswers.isSmallFarmer ? 'YES' : 'NO'}. Outstanding short-term crop loans? ${quizAnswers.hasCropLoan ? 'YES' : 'NO'}. Interested in micro-irrigation subsisides & water saving? ${quizAnswers.needsInsurance ? 'YES' : 'NO'}.` : 'Quiz results: Not completed yet.'}
@@ -155,13 +179,13 @@ RESPONSE GUIDELINES:
 
     // Process chat history and formats for Gemini API
     const contents: any[] = [];
-    
+
     // Add history except the last message
     for (let i = 0; i < messages.length - 1; i++) {
       const msg = messages[i];
       contents.push({
         role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }]
+        parts: [{ text: msg.content }],
       });
     }
 
@@ -169,19 +193,23 @@ RESPONSE GUIDELINES:
     const lastParts: any[] = [];
     if (lastMessage.image) {
       // Strip base64 prefix if present (e.g., "data:image/jpeg;base64,")
-      const base64Data = lastMessage.image.replace(/^data:image\/\w+;base64,/, '');
+      const base64Data = lastMessage.image.replace(
+        /^data:image\/\w+;base64,/,
+        ''
+      );
       lastParts.push({
         inlineData: {
-          mimeType: lastMessage.image.match(/^data:([^;]+);/)?.[1] || 'image/jpeg',
-          data: base64Data
-        }
+          mimeType:
+            lastMessage.image.match(/^data:([^;]+);/)?.[1] || 'image/jpeg',
+          data: base64Data,
+        },
       });
     }
-    
+
     lastParts.push({ text: lastMessage.content });
     contents.push({
       role: 'user',
-      parts: lastParts
+      parts: lastParts,
     });
 
     // Run generateContent from @google/genai SDK
@@ -191,16 +219,18 @@ RESPONSE GUIDELINES:
       config: {
         systemInstruction: systemInstruction,
         temperature: 0.7,
-      }
+      },
     });
 
-    const replyText = response.text || 'Sorry, I faced an issue processing your query.';
+    const replyText =
+      response.text || 'Sorry, I faced an issue processing your query.';
     res.json({ reply: replyText });
-
   } catch (error: any) {
     console.error('Gemini Chat API Error:', error);
     res.status(500).json({
-      error: error.message || 'An unexpected error occurred during chat advisory processing.'
+      error:
+        error.message ||
+        'An unexpected error occurred during chat advisory processing.',
     });
   }
 });
@@ -209,18 +239,45 @@ RESPONSE GUIDELINES:
 app.get('/api/agri-news', (req, res) => {
   const lang = req.query.lang || 'en';
   const newsEn = [
-    { id: 1, title: 'Rythu Bharosa Kharif installment release initiated by the state.', date: 'May 28, 2026' },
-    { id: 2, title: 'State implements 24x7 free power checks. Report interruptions at nearest Rythu Vedikas.', date: 'May 24, 2026' }
+    {
+      id: 1,
+      title: 'Rythu Bharosa Kharif installment release initiated by the state.',
+      date: 'May 28, 2026',
+    },
+    {
+      id: 2,
+      title:
+        'State implements 24x7 free power checks. Report interruptions at nearest Rythu Vedikas.',
+      date: 'May 24, 2026',
+    },
   ];
   const newsTe = [
-    { id: 1, title: 'రైతు భరోసా ఖరీఫ్ పెట్టుబడి సాయం విడుదల ప్రక్రియ ప్రారంభం.', date: 'మే 28, 2026' },
-    { id: 2, title: '24 గంటల ఉచిత నాణ్యమైన విద్యుత్ సరఫరా పర్యవేక్షణ. అంతరాయాలు ఉంటే రైతు వేదికల్లో ఫిర్యాదు చేయండి.', date: 'మే 24, 2026' }
+    {
+      id: 1,
+      title: 'రైతు భరోసా ఖరీఫ్ పెట్టుబడి సాయం విడుదల ప్రక్రియ ప్రారంభం.',
+      date: 'మే 28, 2026',
+    },
+    {
+      id: 2,
+      title:
+        '24 గంటల ఉచిత నాణ్యమైన విద్యుత్ సరఫరా పర్యవేక్షణ. అంతరాయాలు ఉంటే రైతు వేదికల్లో ఫిర్యాదు చేయండి.',
+      date: 'మే 24, 2026',
+    },
   ];
   const newsUr = [
-    { id: 1, title: 'ریتھو بھروسہ خریف قسط جاری کرنے کا عمل شروع ہو گیا ہے۔', date: 'مئی 28، 2026' },
-    { id: 2, title: 'ریاست 24 گھنٹے مفت بجلی فراہم کرتی ہے۔ کسی بھی رکاوٹ کی اطلاع ریتھو ویدیکا پر دیں۔', date: 'مئی 24، 2026' }
+    {
+      id: 1,
+      title: 'ریتھو بھروسہ خریف قسط جاری کرنے کا عمل شروع ہو گیا ہے۔',
+      date: 'مئی 28، 2026',
+    },
+    {
+      id: 2,
+      title:
+        'ریاست 24 گھنٹے مفت بجلی فراہم کرتی ہے۔ کسی بھی رکاوٹ کی اطلاع ریتھو ویدیکا پر دیں۔',
+      date: 'مئی 24، 2026',
+    },
   ];
-  
+
   if (lang === 'te') res.json(newsTe);
   else if (lang === 'ur') res.json(newsUr);
   else res.json(newsEn);
@@ -233,7 +290,7 @@ app.post('/api/analyze-soil-card', async (req, res) => {
     const ai = getGeminiClient();
 
     let contents: any[] = [];
-    let promptText = "";
+    let promptText = '';
     let crop = 'paddy';
     let acres = 3;
     let season = 'kharif';
@@ -242,7 +299,16 @@ app.post('/api/analyze-soil-card', async (req, res) => {
       crop = values.crop;
       acres = values.acres;
       season = values.season;
-      const { soilTexture, pH, organicCarbon, nitrogen, phosphorus, potassium, zincDeficient, ironDeficient } = values;
+      const {
+        soilTexture,
+        pH,
+        organicCarbon,
+        nitrogen,
+        phosphorus,
+        potassium,
+        zincDeficient,
+        ironDeficient,
+      } = values;
       promptText = `Provide tailored scientific fertilizer recommendations for ${acres} acres of ${crop} in the ${season} season under Telangana agricultural soil patterns.
       The soil health card lab metrics entered manually by the farmer are:
       - Soil Texture / Type: ${soilTexture === 'clay' ? 'Regur / Clay soil' : soilTexture === 'loamy' ? 'Chalaka / Loamy soil' : 'Dubba / Sandy soil'}
@@ -267,8 +333,8 @@ app.post('/api/analyze-soil-card', async (req, res) => {
       contents.push({
         inlineData: {
           mimeType,
-          data: base64Data
-        }
+          data: base64Data,
+        },
       });
     }
 
@@ -308,37 +374,61 @@ Ensure the recommendations are beautifully formatted with clear headings, bullet
         responseSchema: {
           type: 'OBJECT' as any,
           properties: {
-            soilPh: { type: 'NUMBER' as any, description: 'The absolute soil pH value extracted or provided.' },
-            organicCarbon: { type: 'STRING' as any, description: 'Organic carbon content parsed or provided: low, medium, high.' },
-            nitrogen: { type: 'STRING' as any, description: 'Available Nitrogen (N) rating: low, medium, high.' },
-            phosphorus: { type: 'STRING' as any, description: 'Available Phosphorus (P) rating: low, medium, high.' },
-            potassium: { type: 'STRING' as any, description: 'Available Potassium (K) rating: low, medium, high.' },
-            micronutrientDeficiencies: { 
-              type: 'ARRAY' as any, 
-              items: { type: 'STRING' as any }, 
-              description: 'Micronutrients deficient like Zinc, Iron, Sulphur, Boron' 
+            soilPh: {
+              type: 'NUMBER' as any,
+              description: 'The absolute soil pH value extracted or provided.',
             },
-            recommendationsMarkdown: { 
-              type: 'STRING' as any, 
-              description: 'Complete localized personalized detailed advisory, fertilizer split schedule, and chemical soil treatment recommendations.' 
-            }
+            organicCarbon: {
+              type: 'STRING' as any,
+              description:
+                'Organic carbon content parsed or provided: low, medium, high.',
+            },
+            nitrogen: {
+              type: 'STRING' as any,
+              description: 'Available Nitrogen (N) rating: low, medium, high.',
+            },
+            phosphorus: {
+              type: 'STRING' as any,
+              description:
+                'Available Phosphorus (P) rating: low, medium, high.',
+            },
+            potassium: {
+              type: 'STRING' as any,
+              description: 'Available Potassium (K) rating: low, medium, high.',
+            },
+            micronutrientDeficiencies: {
+              type: 'ARRAY' as any,
+              items: { type: 'STRING' as any },
+              description:
+                'Micronutrients deficient like Zinc, Iron, Sulphur, Boron',
+            },
+            recommendationsMarkdown: {
+              type: 'STRING' as any,
+              description:
+                'Complete localized personalized detailed advisory, fertilizer split schedule, and chemical soil treatment recommendations.',
+            },
           },
-          required: ['soilPh', 'organicCarbon', 'nitrogen', 'phosphorus', 'potassium', 'recommendationsMarkdown']
-        }
-      }
+          required: [
+            'soilPh',
+            'organicCarbon',
+            'nitrogen',
+            'phosphorus',
+            'potassium',
+            'recommendationsMarkdown',
+          ],
+        },
+      },
     });
 
     const outputText = response.text || '{}';
     res.json(JSON.parse(outputText));
-
   } catch (error: any) {
     console.error('Soil Health Card AI Analyzer Error:', error);
     res.status(500).json({
-      error: error.message || 'Failed to process AI Soil Health diagnosis.'
+      error: error.message || 'Failed to process AI Soil Health diagnosis.',
     });
   }
 });
-
 
 // 4. Vite development middleware / Production bundle serving
 async function initializeServer() {
@@ -359,7 +449,9 @@ async function initializeServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[Rythu Sethu Server] Running efficiently on http://localhost:${PORT}`);
+    console.log(
+      `[Rythu Sethu Server] Running efficiently on http://localhost:${PORT}`
+    );
   });
 }
 
