@@ -456,9 +456,18 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
         });
 
         if (!res.ok) {
-          const errData = await res.json();
+          console.error(
+            `Soil Health API request to ${API_BASE}/api/analyze-soil-card failed with status ${res.status}`
+          );
+          const errText = await res.text().catch(() => '');
+          console.error('Error response body:', errText);
+          let errData: any = {};
+          try {
+            errData = JSON.parse(errText);
+          } catch {}
           throw new Error(
-            errData.error || 'Server error occured parsing soil metrics.'
+            errData.error ||
+              `Server error occurred parsing soil metrics (${res.status}).`
           );
         }
 

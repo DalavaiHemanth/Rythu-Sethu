@@ -63,6 +63,8 @@ export default function App() {
       if (response.ok) {
         const data = await response.json();
         setNews(data);
+      } else {
+        console.warn(`Failed to fetch agri-news: status ${response.status}`);
       }
     } catch (err) {
       console.error('Failed to trigger background news call:', err);

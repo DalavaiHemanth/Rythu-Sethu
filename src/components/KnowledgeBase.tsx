@@ -67,7 +67,9 @@ export default function KnowledgeBase({
     try {
       const response = await fetch(`${API_BASE}/api/documents`);
       if (!response.ok) {
-        throw new Error('Failed to retrieve policy G.O. circulars database');
+        throw new Error(
+          `Failed to retrieve policy G.O. circulars database (${response.status})`
+        );
       }
       const data = await response.json();
       setDocuments(data);
@@ -100,7 +102,9 @@ export default function KnowledgeBase({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to load document into context memory.');
+        throw new Error(
+          `Failed to load document into context memory (${response.status}).`
+        );
       }
 
       setTitle('');
@@ -144,7 +148,7 @@ export default function KnowledgeBase({
         method: 'DELETE',
       });
       if (!response.ok) {
-        throw new Error('Could not delete circular.');
+        throw new Error(`Could not delete circular (${response.status}).`);
       }
       fetchDocuments();
       onDocumentAdded();

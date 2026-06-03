@@ -319,10 +319,18 @@ export default function Chatbot({
       });
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
+        console.error(
+          `Chat API request to ${API_BASE}/api/chat failed with status ${res.status}`
+        );
+        const errText = await res.text().catch(() => '');
+        console.error('Error response body:', errText);
+        let errData: any = {};
+        try {
+          errData = JSON.parse(errText);
+        } catch {}
         throw new Error(
           errData.error ||
-            'Server returned an error answering your advice request.'
+            `Server returned an error (${res.status}) answering your advice request.`
         );
       }
 
