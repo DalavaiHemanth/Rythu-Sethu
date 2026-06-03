@@ -28,11 +28,8 @@ repos:
           - eslint@8.56.0
           - eslint-define-config@2.1.0
 
-  - repo: local
+  - repo: https://github.com/mohsentaleb/precommit-tsc
+    rev: v1.0.0
     hooks:
       - id: tsc
         name: tsc
-        entry: npx tsc --noEmit
-        language: system
-        files: \.tsx?$
-        pass_filenames: false
