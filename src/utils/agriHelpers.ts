@@ -1,5 +1,10 @@
 import { LanguageKey } from '../data/translations';
 
+export const API_BASE =
+  typeof import.meta !== 'undefined' && (import.meta as any).env
+    ? ((import.meta as any).env.VITE_API_URL as string) || ''
+    : '';
+
 export interface NPKAdvice {
   urea: number;
   dap: number;

@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import React, { useState, useEffect } from 'react';
 import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { UploadedDoc } from '../types';
+import { API_BASE } from '../utils/agriHelpers';
 
 interface KnowledgeBaseProps {
   language: LanguageKey;
@@ -64,7 +65,7 @@ export default function KnowledgeBase({
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/documents');
+      const response = await fetch(`${API_BASE}/api/documents`);
       if (!response.ok) {
         throw new Error('Failed to retrieve policy G.O. circulars database');
       }
@@ -92,7 +93,7 @@ export default function KnowledgeBase({
     setError(null);
 
     try {
-      const response = await fetch('/api/documents/upload', {
+      const response = await fetch(`${API_BASE}/api/documents/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedDoc?.id, title, content }),
@@ -139,7 +140,7 @@ export default function KnowledgeBase({
   const handleDelete = async (id: string) => {
     setError(null);
     try {
-      const response = await fetch(`/api/documents/${id}`, {
+      const response = await fetch(`${API_BASE}/api/documents/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) {

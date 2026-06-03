@@ -18,6 +18,7 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import React, { useState, useRef, useTransition } from 'react';
 import { LanguageKey } from '../data/translations';
+import { API_BASE } from '../utils/agriHelpers';
 
 interface SoilHealthCardProps {
   language: LanguageKey;
@@ -448,7 +449,7 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
           language,
         };
 
-        const res = await fetch('/api/analyze-soil-card', {
+        const res = await fetch(`${API_BASE}/api/analyze-soil-card`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),

@@ -18,6 +18,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import React, { useState, useRef, useEffect } from 'react';
 import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { Message } from '../types';
+import { API_BASE } from '../utils/agriHelpers';
 
 interface ChatbotProps {
   language: LanguageKey;
@@ -57,7 +58,7 @@ export default function Chatbot({
   const [loadedDocsCount, setLoadedDocsCount] = useState<number>(2);
 
   useEffect(() => {
-    fetch('/api/documents')
+    fetch(`${API_BASE}/api/documents`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -304,7 +305,7 @@ export default function Chatbot({
     try {
       const messageHistory = [...messages, userMessage];
 
-      const res = await fetch('/api/chat', {
+      const res = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

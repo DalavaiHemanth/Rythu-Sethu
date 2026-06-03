@@ -20,6 +20,7 @@ import KnowledgeBase from './components/KnowledgeBase';
 import SchemeQuiz from './components/SchemeQuiz';
 import { TELANGANA_DISTRICTS_EN } from './data/staticData';
 import { LanguageKey, TRANSLATIONS } from './data/translations';
+import { API_BASE } from './utils/agriHelpers';
 
 interface AgriNewsItem {
   id: number;
@@ -56,7 +57,9 @@ export default function App() {
   // Fetch seasonal news from server API
   const fetchAgriNews = async () => {
     try {
-      const response = await fetch(`/api/agri-news?lang=${language}`);
+      const response = await fetch(
+        `${API_BASE}/api/agri-news?lang=${language}`
+      );
       if (response.ok) {
         const data = await response.json();
         setNews(data);
