@@ -19,6 +19,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import React, { useState, useRef, useTransition } from 'react';
 import { LanguageKey } from '../data/translations';
 import { API_BASE } from '../utils/agriHelpers';
+import { generateSoilCardAnalysis } from '../utils/geminiClient';
 
 interface SoilHealthCardProps {
   language: LanguageKey;
@@ -443,35 +444,12 @@ export default function SoilHealthCard({ language }: SoilHealthCardProps) {
 
     startTransition(async () => {
       try {
-        const payload = {
+        const data = await generateSoilCardAnalysis({
           values: activeTab === 'manual' ? soilValues : null,
           image: activeTab === 'upload' ? imagePreview : null,
           language,
-        };
-
-        const res = await fetch(`${API_BASE}/api/analyze-soil-card`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
         });
 
-        if (!res.ok) {
-          console.error(
-            `Soil Health API request to ${API_BASE}/api/analyze-soil-card failed with status ${res.status}`
-          );
-          const errText = await res.text().catch(() => '');
-          console.error('Error response body:', errText);
-          let errData: any = {};
-          try {
-            errData = JSON.parse(errText);
-          } catch {}
-          throw new Error(
-            errData.error ||
-              `Server error occurred parsing soil metrics (${res.status}).`
-          );
-        }
-
-        const data = await res.json();
         setAiReport(data);
       } catch (err: any) {
         console.error(err);

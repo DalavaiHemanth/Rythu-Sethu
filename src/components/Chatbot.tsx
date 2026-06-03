@@ -5,6 +5,7 @@ import {
   Compass,
   Copy,
   Image,
+  Key,
   Mic,
   RefreshCw,
   Send,
@@ -19,6 +20,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { Message } from '../types';
 import { API_BASE } from '../utils/agriHelpers';
+import {
+  generateChatResponse,
+  getDocuments,
+  getGeminiApiKey,
+  setGeminiApiKey,
+  clearGeminiApiKey,
+} from '../utils/geminiClient';
 
 interface ChatbotProps {
   language: LanguageKey;
@@ -57,17 +65,18 @@ export default function Chatbot({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [loadedDocsCount, setLoadedDocsCount] = useState<number>(2);
 
+  // Key configurations for direct API access
+  const [showKeyInput, setShowKeyInput] = useState<boolean>(false);
+  const [apiKeyText, setApiKeyText] = useState<string>(getGeminiApiKey() || '');
+
   useEffect(() => {
-    fetch(`${API_BASE}/api/documents`)
-      .then((res) => res.json())
+    getDocuments()
       .then((data) => {
         if (Array.isArray(data)) {
           setLoadedDocsCount(data.length);
         }
       })
-      .catch((err) =>
-        console.error('Error fetching docs count for sidebar:', err)
-      );
+      .catch((err) => console.log('Err fetching doc count:', err));
   }, []);
 
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -305,36 +314,14 @@ export default function Chatbot({
     try {
       const messageHistory = [...messages, userMessage];
 
-      const res = await fetch(`${API_BASE}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: messageHistory,
-          quizAnswers: quizAnswers || undefined,
-          locationInfo: selectedDistrict
-            ? { district: selectedDistrict }
-            : undefined,
-          language: language,
-        }),
+      const data = await generateChatResponse({
+        messages: messageHistory,
+        quizAnswers: quizAnswers || undefined,
+        locationInfo: selectedDistrict
+          ? { district: selectedDistrict }
+          : undefined,
+        language: language,
       });
-
-      if (!res.ok) {
-        console.error(
-          `Chat API request to ${API_BASE}/api/chat failed with status ${res.status}`
-        );
-        const errText = await res.text().catch(() => '');
-        console.error('Error response body:', errText);
-        let errData: any = {};
-        try {
-          errData = JSON.parse(errText);
-        } catch {}
-        throw new Error(
-          errData.error ||
-            `Server returned an error (${res.status}) answering your advice request.`
-        );
-      }
-
-      const data = await res.json();
 
       const assistantMessage: Message = {
         id: `m_${Date.now() + 1}`,
@@ -501,8 +488,79 @@ export default function Chatbot({
                 <VolumeX className="w-4 h-4" />
               )}
             </button>
+
+            {/* Key Configuration Toggle */}
+            <button
+              onClick={() => setShowKeyInput(!showKeyInput)}
+              className={`p-2 rounded-lg border transition-all flex items-center justify-center cursor-pointer min-h-[44px] ${
+                showKeyInput || getGeminiApiKey()
+                  ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
+                  : 'bg-stone-100 border-stone-200 text-stone-500 hover:bg-stone-200'
+              }`}
+              title="Configure Gemini API Key"
+            >
+              <Key className="w-4 h-4" />
+            </button>
           </div>
         </div>
+
+        {/* API Key settings panel */}
+        <AnimatePresence>
+          {showKeyInput && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="px-5 py-3 bg-amber-50/50 border-b border-amber-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+            >
+              <div className="flex-1">
+                <p className="font-semibold text-amber-800 mb-1">
+                  Gemini API Key Settings (Static Pages Fallback)
+                </p>
+                <p className="text-amber-700/80 leading-relaxed">
+                  Enter your developer Gemini API Key to communicate directly
+                  with Google's API when the backend server is unreachable.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="password"
+                  placeholder="Paste your GEMINI_API_KEY..."
+                  value={apiKeyText}
+                  onChange={(e) => setApiKeyText(e.target.value)}
+                  className="px-3 py-1.5 border border-stone-200 rounded-md bg-white focus:outline-none focus:border-amber-400 w-48 sm:w-64 min-h-[44px]"
+                />
+                <button
+                  onClick={() => {
+                    if (apiKeyText.trim()) {
+                      setGeminiApiKey(apiKeyText);
+                      alert('Gemini API Key saved locally!');
+                      setShowKeyInput(false);
+                    } else {
+                      alert('Please enter a valid key.');
+                    }
+                  }}
+                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-semibold transition-colors cursor-pointer min-h-[44px]"
+                >
+                  Save
+                </button>
+                {getGeminiApiKey() && (
+                  <button
+                    onClick={() => {
+                      clearGeminiApiKey();
+                      setApiKeyText('');
+                      alert('Gemini API Key cleared!');
+                      setShowKeyInput(false);
+                    }}
+                    className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-md font-semibold transition-colors cursor-pointer min-h-[44px]"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Dynamic Typography & Accessibility Settings Dashboard */}
         <div className="px-5 py-2.5 bg-stone-50/95 border-b border-earth-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">

@@ -16,6 +16,11 @@ import React, { useState, useEffect } from 'react';
 import { LanguageKey, TRANSLATIONS } from '../data/translations';
 import { UploadedDoc } from '../types';
 import { API_BASE } from '../utils/agriHelpers';
+import {
+  getDocuments,
+  uploadDocument,
+  deleteDocument,
+} from '../utils/geminiClient';
 
 interface KnowledgeBaseProps {
   language: LanguageKey;
@@ -60,18 +65,12 @@ export default function KnowledgeBase({
     setContent('');
   };
 
-  // Fetch current documents from backend
+  // Fetch current documents from backend / local storage fallback
   const fetchDocuments = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/api/documents`);
-      if (!response.ok) {
-        throw new Error(
-          `Failed to retrieve policy G.O. circulars database (${response.status})`
-        );
-      }
-      const data = await response.json();
+      const data = await getDocuments();
       setDocuments(data);
     } catch (err: any) {
       console.error(err);
@@ -95,17 +94,7 @@ export default function KnowledgeBase({
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE}/api/documents/upload`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedDoc?.id, title, content }),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to load document into context memory (${response.status}).`
-        );
-      }
+      await uploadDocument(title, content, selectedDoc?.id);
 
       setTitle('');
       setContent('');
@@ -144,11 +133,9 @@ export default function KnowledgeBase({
   const handleDelete = async (id: string) => {
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/api/documents/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error(`Could not delete circular (${response.status}).`);
+      const success = await deleteDocument(id);
+      if (!success) {
+        throw new Error('Could not delete circular.');
       }
       fetchDocuments();
       onDocumentAdded();
